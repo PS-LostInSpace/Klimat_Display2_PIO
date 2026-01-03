@@ -1,6 +1,5 @@
 #pragma once
-
 #include <stdbool.h>
 
-bool display_init(void);
-void display_update(void);
+bool display_begin();
+void display_show_test_screen();

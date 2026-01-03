@@ -1,51 +1,44 @@
 #include <Arduino.h>
 #include "config.h"
-
-#ifdef HAS_DISPLAY
-  #include "Display_reTerminal_E1001.h"
-#endif
+#include "secret_credentials.h"
 
 #ifdef HAS_WIFI
-  #include "Network.h"
+#include "AppNetwork.h"
 #endif
 
 #ifdef HAS_OTA
-  #include "OTA.h"
+#include "OTA.h"
+#endif
+
+#ifdef HAS_DISPLAY
+#include "Display_reTerminal_E1001.h"
 #endif
 
 void setup() {
-    Serial.begin(115200);
-    delay(1000);
-    while (!Serial) {
-        delay(10);
-    }
-    Serial.println(DEVICE_NAME " booting...");
-
-#ifdef HAS_DISPLAY
-  display_init();
-#endif
 
 #ifdef HAS_WIFI
-  network_init();
+    network_begin();
 #endif
 
 #ifdef HAS_OTA
-  ota_init();
+    ota_begin(SECRET_OTA_HOSTNAME, SECRET_OTA_PASS);
+#endif
+
+#ifdef HAS_DISPLAY
+  display_begin();
+  display_show_test_screen();
 #endif
 }
 
 void loop() {
-#ifdef HAS_DISPLAY
-  display_update();
-#endif
 
 #ifdef HAS_WIFI
-  network_loop();
+    network_loop();
 #endif
 
 #ifdef HAS_OTA
-  ota_loop();
+    ota_loop();
 #endif
 
-  delay(10);
+    delay(10);
 }

@@ -1,0 +1,3 @@
+#pragma once
+
+#define BOARD_SCREEN_COMBO 520 // reTerminal E1001 (UC8179)
