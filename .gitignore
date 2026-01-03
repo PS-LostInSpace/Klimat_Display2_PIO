@@ -6,7 +6,7 @@
 .vscode/ipch/
 
 # Secrets
-include/secrets.h
+include/secret*.h
 
 # OS
 .DS_Store
