@@ -9,8 +9,8 @@
 #include "WebOTA.h"
 #endif
 
-#ifdef HAS_DISPLAY
-#include "Display_reTerminal_E1001.h"
+#ifdef HAS_LVGL
+#include "LvglPort.h"
 #endif
 
 void setup() {
@@ -25,10 +25,12 @@ void setup() {
   }
 #endif
 
-#ifdef HAS_DISPLAY
-  display_begin();
-  display_show_test_screen(); // kan bytas mot status-screen imorgon
+#ifdef HAS_LVGL
+  lvgl_port_loop();
 #endif
+ 
+delay(5);
+
 }
 
 void loop() {
