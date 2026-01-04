@@ -6,6 +6,7 @@
 // Feature flags
 #define HAS_WIFI
 #define HAS_WEB_OTA
+#define HAS_LVGL
 #define HAS_DISPLAY
 
 // Display type

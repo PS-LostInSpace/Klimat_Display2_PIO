@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include <Wire.h>
+
 #include "config.h"
 
 #ifdef HAS_WIFI
@@ -26,10 +28,10 @@ void setup() {
 #endif
 
 #ifdef HAS_LVGL
-  lvgl_port_loop();
+  lvgl_port_begin();   // Init LVGL and ePaper display
 #endif
  
-delay(5);
+  delay(5);
 
 }
 
@@ -40,6 +42,10 @@ void loop() {
 
 #ifdef HAS_WEB_OTA
   webota_loop();
+#endif
+
+#ifdef HAS_LVGL
+  lvgl_port_loop();    // <-- VIKTIGT
 #endif
 
   delay(10);
