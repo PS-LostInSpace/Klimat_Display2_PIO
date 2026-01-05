@@ -8,13 +8,36 @@ för projektet Klimat_Display2_PIO.
 
 ---
 
+## 🏷️ Git-tag strategi (milstolpar)
+
+Projektet använder **enkla, beskrivande tags** för större steg.
+Varje tag motsvarar ett **stabilt läge som går att återgå till**.
+
+### Principer
+- En tag = en tydlig milstolpe
+- Tags flyttas **inte i efterhand**
+- Skapas **efter push** när steget är verifierat
+
+### Namnstandard
+- `step-6-proof-of-life`
+- `step-7-dashboard-dummy`
+- `step-8-mqtt-integration`
+
+### Kommando (exempel)
+```bash
+git tag step-7-dashboard-dummy
+git push --tags
+
 ## 🟢 Steg 7: Dashboard-layout & refresh-policy (LVGL / E-Ink)
+
+---
 
 **Mål:**  
 Skapa en **strukturerad dummy-dashboard** som efterliknar en väderdisplay
 och samtidigt minska blink/flicker genom kontrollerad ePaper-refresh.
 
 Ingen riktig väderdata ännu – endast layout, typografi och uppdateringspolicy.
+
 
 ### 7.1 Refresh-policy (anti-blink)
 - [ ] Begränsa `epaper.update()` till max 1 gång per minut
@@ -32,6 +55,136 @@ Ingen riktig väderdata ännu – endast layout, typografi och uppdateringspolic
 - [ ] Använd konsekvent typografi (stor/liten text)
 - [ ] Anpassa layout för 800 × 480 (landscape)
 
+### 7.2.1 Container-layout (baserad på referensbild)
+
+**Mål:** Skapa ett layout-skelett som efterliknar referensbilden (OUT / SENSOR / SKY / INFO + FORECAST-rad)
+för att kunna testa täthet och typografi på 7.5" E-Ink (800×480).
+
+#### Layout-grid (övergripande)
+- Skärmen delas i 2 huvudrader:
+  - **Row A (Top)**: “cards” (OUT, SENSOR, SKY, INFO)
+  - **Row B (Bottom)**: FORECAST-rad med 6–7 “forecast cards”
+
+##### Rekommenderade höjder
+- Row A: ~240 px (övre halvan)
+- Row B: ~240 px (nedre halvan)
+
+---
+
+#### Row A – Top cards (4 kolumner)
+Row A delas i 4 kolumner (cards):
+1) **OUT card** (vänster, ca 35% bredd)
+2) **SENSOR card** (nästa, ca 25% bredd)
+3) **SKY card** (nästa, ca 25% bredd)
+4) **INFO card** (höger, ca 15% bredd)
+
+**Card-styling (dummy)**
+- Tunn ram (1 px)
+- Liten “header badge” överst: t.ex. `OUT Helsinki`
+- Inre padding: 10–14 px
+
+---
+
+#### OUT card (detalj)
+Container: `card_out`
+- Header: `out_header` (badge)
+- Main value: `out_temp_big` (stor temp)
+- Meta rows: `out_meta_col` (vertikal lista)
+  - `out_feelslike`
+  - `out_humidity`
+  - `out_pressure`
+  - `out_wind`
+- Icon area: `out_icon_box` (stor väderikon / placeholder)
+
+**Placering**
+- Vänster kolumn: textblock (temp + metainfo)
+- Höger kolumn: ikon/placeholder-ruta
+
+---
+
+#### SENSOR card (detalj)
+Container: `card_sensor`
+- Header: `sensor_header` (badge)
+- Sensor 1 block: `sensor1_block`
+  - `sensor1_temp_big`
+  - `sensor1_meta_row` (wifi/ikon + RH)
+- Sensor 2 block: `sensor2_block`
+  - `sensor2_temp_big`
+  - `sensor2_meta_row` (wifi/ikon + RH)
+- Option: liten batteriikon/dummy längst upp i varje block
+
+**Placering**
+- 2 rader (sensor1 över, sensor2 under), lika höjd
+
+---
+
+#### SKY card (detalj)
+Container: `card_sky`
+- Header: `sky_header` (badge)
+- Timeline area: `sky_timeline`
+  - vänster: tider (t.ex. 9:09, 9:45, …)
+  - mitten: vertikal bar/linje (dummy)
+  - höger: markör (triangel / dummy)
+- Moon/sun area: `sky_moon_box`
+  - stor cirkel (dummy)
+  - text under: `sky_daylength` (t.ex. “9h 39m”)
+
+**Placering**
+- Vänster: timeline (ca 60–65%)
+- Höger: moon/sun (ca 35–40%)
+
+---
+
+#### INFO card (detalj)
+Container: `card_info`
+- Header: `info_header` (badge)
+- Big time: `info_time_big` (t.ex. 10:22)
+- Date lines: `info_date_lines`
+  - `info_weekday_date`
+  - `info_weekno`
+  - `info_year`
+- Footer: `info_mode` (t.ex. “DEV MODE”)
+
+**Placering**
+- Vertikal stack, centrerad
+
+---
+
+#### Row B – FORECAST (6–7 cards i rad)
+Container: `row_forecast`
+- Header badge: `forecast_header` (t.ex. `FORECAST Helsinki`)
+- Cards container: `forecast_cards_row` (horisontell layout)
+  - `fc_1` … `fc_6` (eller 7 beroende på bredd)
+
+Varje forecast card (`fc_n`) innehåller:
+- `fc_time` (t.ex. 15:00)
+- `fc_icon_box` (ikon/placeholder)
+- `fc_temp` (t.ex. 26°C)
+- `fc_wind` (t.ex. 19 m/s)
+- `fc_moonphase` (liten cirkel/dummy längst ner)
+- Option: liten varningstriangel i hörn (dummy)
+
+**Card-styling**
+- Liten ram + inner padding
+- Ikonruta kan vara grå “panel” (simuleras med ram + fylld bakgrund senare)
+
+---
+
+#### Dummy-data (för layouttest)
+- OUT: -26.6°C, RH 11%, 1099 hPa, Wind 15–24 m/s
+- SENSOR: 19.4°C / 18.2°C, RH 20% / 28%
+- SKY: tider + daylength “9h 39m”
+- INFO: 10:22, Sun 6.8, Week 31, 2023, DEV MODE
+- FORECAST: 6 rutor med tid + temp + vind
+
+---
+
+#### Definition of Done för 7.2.1
+- Layout-skelett finns (rutor/containers + rubriker)
+- All text ryms utan att klippa
+- Visuellt test på ePaper visar om layouten är “för tät” eller ok
+
+
 ### 7.3 Förberedelse för framtida data
 - [ ] Abstrakta “data labels” (temp, vind, status)
 - [ ] Enkla placeholder-värden
@@ -46,6 +199,8 @@ Ingen riktig väderdata ännu – endast layout, typografi och uppdateringspolic
 - [ ] `git status`
 - [ ] `git add .`
 - [ ] `git commit -m "Step 7: Weather-style dashboard layout + ePaper refresh policy"`
+- [ ] `git push`
+- [ ] `Tag: step-7-dashboard-dummy`
 
 ---
 
@@ -100,6 +255,8 @@ titel, tid och WiFi-status. Full refresh OK, ingen optimering ännu.
 - [x] `git add .`
 - [x] `git commit -m "Step 6: LVGL proof-of-life layout on 7.5in ePaper"`
 - [x] `git push`
+- [x] Tag: step-6-proof-of-life
+
 
 ---
 
