@@ -3,6 +3,8 @@
 #include <lvgl.h>
 #include "driver.h"      // BOARD_SCREEN_COMBO 520
 #include <TFT_eSPI.h>
+#include "config.h"
+
 
 #ifdef HAS_WIFI
   #include <WiFi.h>
@@ -137,7 +139,7 @@ void lvgl_port_begin() {
   lv_obj_align(labelWifi, LV_ALIGN_CENTER, 0, 20);
 
   // Uppdatera UI var sekund
-  lv_timer_create(ui_update_cb, 1000, nullptr);
+  lv_timer_create(ui_update_cb, 60000, nullptr);
 
   // Första refresh
   g_need_epaper_update = true;
