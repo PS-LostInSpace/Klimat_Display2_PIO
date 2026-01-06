@@ -1,140 +1,68 @@
 # Klimat_Display2_PIO – Backlog
 
-Detta dokument innehåller idéer, buggar, förbättringar och framtida arbete
-för projektet Klimat_Display2_PIO.
-
-> 📌 Levande backlog / arbetslista i VS Code & PlatformIO  
-> Uppdateras kontinuerligt under utveckling
+Levande backlog för Klimat_Display2_PIO (reTerminal E1001 ESP32-S3 + 7.5" e-ink 800×480).
+Fokus: stabil displaypipeline (LVGL → Seeed_GFX ePaper) + OTA, därefter MQTT.
 
 ---
 
-## 🟢 Steg 7: Dashboard-layout & refresh-policy (LVGL / E-Ink)
+## ✅ Klart (översikt)
+- [x] Projektstruktur + PlatformIO (ESP32-S3, Arduino-ESP32 2.x)
+- [x] WiFi + Async WebOTA (ElegantOTA) fungerar stabilt
+- [x] Display “proof-of-life” med LVGL + ePaper flush/update fungerar (Steg 6)
+- [x] Dummy dashboard-layout (Page 1) renderas på 800×480 (Steg 7 – pågående stabilisering)
+
+---
+
+## 🟢 Steg 7: Dashboard (dummy) – stabil Page 1
 
 **Mål:**  
-Skapa en **strukturerad dummy-dashboard** som efterliknar en väderdisplay
-och samtidigt minska blink/flicker genom kontrollerad ePaper-refresh.
+Visa en stabil dummy-dashboard (Page 1) på 7.5" e-ink 800×480 via LVGL.
+Ingen sidhantering än. Ingen MQTT än. Uppdateringspolicy: t.ex. var 5:e minut.
 
-Ingen riktig väderdata ännu – endast layout, typografi och uppdateringspolicy.
-
-### 7.1 Refresh-policy (anti-blink)
-- [ ] Begränsa `epaper.update()` till max 1 gång per minut
-- [ ] Separera:
-      - [ ] UI-uppdatering (LVGL labels)
-      - [ ] ePaper refresh (batchad)
-- [ ] Dokumentera observerad refresh-tid (ms)
+### 7.1 Bas (stabilitet)
+- [ ] Säkerställ att Page1-layouten alltid ritas utan crash/reset
+- [ ] Sätt upp en enkel refresh-policy (t.ex. 5 min) och undvik onödiga full refresh
 
 ### 7.2 Dashboard-layout (dummy)
 - [ ] Definiera layout-sektioner (containers / align)
-      - [ ] Topp: plats / datum
-      - [ ] Center: stor temperatur (dummyvärde)
-      - [ ] Sekundär info: vind / luftfuktighet (dummy)
-      - [ ] Nederkant: WiFi / systemstatus
-- [ ] Använd konsekvent typografi (stor/liten text)
-- [ ] Anpassa layout för 800 × 480 (landscape)
+- [ ] Kolumn vänster: vind “NU” + 1–2h (dummy text)
+- [ ] Kolumn mitten: ikon placeholder + 30/60/90 min staplar (dummy)
+- [ ] Kolumn höger: UTE/INNE + Atmosfär + “Uppdaterat …” (dummy)
+- [ ] Kontrollera att allt får plats i 800 px (inga kapade bokstäver)
 
-### 7.3 Förberedelse för framtida data
-- [ ] Abstrakta “data labels” (temp, vind, status)
-- [ ] Enkla placeholder-värden
-- [ ] Kommentarer i kod: var MQTT / sensordata ska in
+### 7.3 Text & tecken
+- [ ] Byt till ASCII där det behövs (undvik “–” och åäö tills font-stöd finns)
+- [ ] Standardisera enhetstexter: `m/s`, `dBm`, `C`, `%`, `mbar`
 
-### 7.4 Visuell verifiering
-- [ ] Dashboard känns balanserad på ePaper
-- [ ] Ingen onödig blink vid uppdatering
-- [ ] Uppdateringar upplevs stabila (acceptabel latens)
+### 7.4 Assets (layoutskisser)
+- [ ] Lägg layoutskisser i `/assets/` (png/jpg) och committa dem
+- [ ] Kort README i `/assets/` (vad bilderna representerar)
 
-### 7.5 Git – spara Steg 7
+### 7.5 Git – spara Steg 7 stabilt
 - [ ] `git status`
-- [ ] `git add .`
-- [ ] `git commit -m "Step 7: Weather-style dashboard layout + ePaper refresh policy"`
+- [ ] `git add lib/LvglPort/LvglPort.cpp BACKLOG.md assets .gitignore`
+- [ ] `git commit -m "Step 7: stable Page 1 dummy dashboard layout (no paging)"`
+- [ ] `git tag -a step-7-dashboard-page1-stable -m "Step 7 stable Page 1 dummy dashboard"`
+- [ ] `git push && git push --tags`
 
 ---
 
-## 🟢 Steg 6: Display & grafik (LVGL / E-Ink) — KLAR
+## 🟡 Nästa steg (Steg 8)
+**Mål:** MQTT-integration (read-only) + uppdatera UI från MQTT utan att stressa e-ink.
 
-**Mål (uppnått):**  
-Visa en stabil “proof-of-life”-vy på 7.5" E-Ink (reTerminal E1001) med LVGL:
-titel, tid och WiFi-status. Full refresh OK, ingen optimering ännu.
-
-### 6.1 Grundsetup
-- [x] Aktivera `HAS_LVGL` i `config.h`
-- [x] Säkerställ att `lvgl_port_begin()` körs i `setup()`
-- [x] Säkerställ att `lvgl_port_loop()` körs i `loop()`
-- [x] Initiera Seeed_GFX ePaper (UC8179)
-- [x] Rensa skärmen (`fillScreen(WHITE)`)
-
-### 6.2 LVGL-init
-- [x] `lv_init()`
-- [x] LVGL tick via `esp_timer` → `lv_tick_inc(1)` (1 ms)
-- [x] Initiera draw buffer (line-buffer, 800 × 40)
-- [x] Registrera LVGL display driver
-  - [x] `hor_res = 800`
-  - [x] `ver_res = 480`
-  - [x] `flush_cb` → ritar via `epaper.drawPixel()`
-  - [x] `full_refresh = 1` (ePaper proof-of-life)
-
-### 6.3 Dummy-layout (grafik)
-- [x] Titel högst upp  
-      Text: **"Klimat_Display2 (E1001)"**
-- [x] Tid i mitten  
-      Format: `HH:MM:SS` (uptime via `millis()`)
-- [x] WiFi-status under tiden  
-      - [x] IP-adress
-      - [x] RSSI i dBm
-      - [x] Fallback-text vid offline
-
-### 6.4 UI-uppdatering
-- [x] LVGL timer uppdaterar UI periodiskt (nu 60 s)
-- [x] Flagga sätts när UI ändras (`g_need_epaper_update = true`)
-- [x] Faktisk ePaper refresh sker i `lvgl_port_loop()`
-      - [x] `epaper.update()` endast när flaggan är satt
-
-### 6.5 Verifiering
-- [x] Skärmen uppdateras korrekt vid boot
-- [x] Tid räknar upp korrekt (med förväntad ePaper-blockering)
-- [x] WiFi-status visas korrekt (IP + RSSI)
-- [x] Ingen crash / watchdog-reset
-- [x] ElegantOTA fungerar parallellt
-
-### 6.6 Git – spara Steg 6
-- [x] `git status`
-- [x] `git add .`
-- [x] `git commit -m "Step 6: LVGL proof-of-life layout on 7.5in ePaper"`
-- [x] `git push`
+- [ ] Definiera MQTT topics + payload-format (minsta viable)
+- [ ] Koppla MQTT → UI-model (struct/state)
+- [ ] Triggera ePaper refresh endast vid ändring + enligt policy
 
 ---
 
-
-
----
-
-## 🟡 Features / förbättringar (ej tidskritiska)
-- [ ] Lösenordsskyddad OTA  
-      → Server-level Basic Auth i ESPAsyncWebServer
-- [ ] Visa hostname + firmware-version på landningssidan
-- [ ] `/info` endpoint (JSON) för debug
-- [ ] MQTT-status på display (connected / disconnected)
-- [ ] Konfigurerbar refresh-rate för E-Ink
-- [ ] Soft reset / reboot-knapp via web UI
-
----
-
-## 🔴 Buggar / tekniska observationer
-- [ ] ElegantOTA auth fungerar inte konsekvent i async-mode  
-      → Utred: ersätt med explicit server auth
-- [ ] ePaper full refresh blockerar ~2 s (förväntat beteende)
-- [ ] SPI-hastighet för Seeed_GFX oklar / ej verifierad
-
----
-
-## 🔵 Arkitektur / refaktor (låg prio)
-- [ ] Gemensam Network/OTA-modul för flera projekt
-- [ ] Feature-flag cleanup (`HAS_*`)
-- [ ] Införa gemensam `config.h` för projektnamn, version, hostname
+## 🟠 Features (låg prio)
+- [ ] OTA: lösenordskydd / BasicAuth
+- [ ] Bättre klocka (NTP) istället för uptime
+- [ ] Sidhantering (3 sidor) via knappar + debounce + no wraparound
 
 ---
 
 ## 📝 Noteringar
-- LVGL + Seeed_GFX fungerar stabilt på reTerminal E1001
-- ePaper (7.5") kräver lång refresh → policy nödvändig
-- ElegantOTA fungerar stabilt parallellt med LVGL
-- Blink/invertering vid full refresh är normalt för e-ink
+- Projektet bygger på Seeed_GFX (TFT_eSPI-variant) med `BOARD_SCREEN_COMBO 520` (E1001 / UC8179).
+- E-ink: undvik täta uppdateringar (blink + slitage), mål ~5 min eller vid förändring.
