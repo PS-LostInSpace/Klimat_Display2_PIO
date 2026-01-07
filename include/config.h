@@ -7,6 +7,7 @@
 #define HAS_WIFI
 #define HAS_WEB_OTA
 #define HAS_DISPLAY
+#define HAS_LVGL
 
 // Display type
 #define DISPLAY_RETERMINAL_E1001
