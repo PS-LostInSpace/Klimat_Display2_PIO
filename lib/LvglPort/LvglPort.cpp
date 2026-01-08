@@ -3,8 +3,6 @@
 #include <lvgl.h>
 #include "driver.h"      // BOARD_SCREEN_COMBO 520
 #include <TFT_eSPI.h>
-#include "esp_timer.h" 
-
 
 // ---- Display (Seeed_GFX EPaper) ----
 static EPaper epaper;
@@ -27,12 +25,6 @@ static int clamp_int(int v, int lo, int hi) {
   if (v > hi) return hi;
   return v;
 }
-
-// // ---- Tick timer (1 ms) ----
-// static void lv_tick_cb(void *arg) {
-//   (void)arg;
-//   lv_tick_inc(1);
-// }
 
 // ---- Page1 API (future-proof) ----
 static void page1_set_rain_probs(int p30, int p60, int p90) {
@@ -181,7 +173,6 @@ static void ui_build_page1(lv_obj_t* parent) {
   lv_obj_set_style_pad_gap(bars, 10, 0);
 
   const lv_coord_t COL_W = 70;
-  const lv_coord_t PLOT_H = 170;
 
   for (int i = 0; i < 3; i++) {
     // Column container
@@ -248,7 +239,6 @@ static void ui_build_page1(lv_obj_t* parent) {
   lv_obj_align(updated, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
 }
 
-
 void lvgl_port_begin() {
   // ---- EPaper init ----
   epaper.begin();
@@ -256,17 +246,6 @@ void lvgl_port_begin() {
 
   // ---- LVGL init ----
   lv_init();
-
-//   // 1ms tick via esp_timer
-//   const esp_timer_create_args_t tick_args = {
-//     .callback = &lv_tick_cb,
-//     .arg = nullptr,
-//     .dispatch_method = ESP_TIMER_TASK,
-//     .name = "lv_tick"
-//   };
-//   esp_timer_handle_t tick_timer;
-//   esp_timer_create(&tick_args, &tick_timer);
-//   esp_timer_start_periodic(tick_timer, 1000); // 1000us = 1ms
 
   // Buffer: 800 * 40 lines
   const uint32_t buf_lines = 40;
