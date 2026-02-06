@@ -127,8 +127,9 @@ static void ui_build_page1(lv_obj_t* parent) {
   // LEFT: NU + vind
   lv_obj_set_style_pad_all(col_left, 14, 0);
 
-  lv_obj_t* lbl_nu = create_label(col_left, "NU");
-  lv_obj_align(lbl_nu, LV_ALIGN_TOP_LEFT, 0, 0);
+  // Column title
+  lv_obj_t* lbl_wind = create_label(col_left, "VIND");
+  lv_obj_align(lbl_wind, LV_ALIGN_TOP_LEFT, 0, 0);
 
   lv_obj_t* compass = create_box(col_left, 140, 140, true);
   lv_obj_align(compass, LV_ALIGN_TOP_LEFT, 0, 50);
@@ -144,10 +145,11 @@ static void ui_build_page1(lv_obj_t* parent) {
   lv_obj_t* line = create_box(col_left, W_LEFT - 28, 1, false);
   lv_obj_set_style_bg_opa(line, LV_OPA_100, 0);
   lv_obj_set_style_bg_color(line, lv_color_black(), 0);
-  lv_obj_align(line, LV_ALIGN_TOP_LEFT, 0, 240);
+  lv_obj_align(line, LV_ALIGN_TOP_LEFT, 0, 220);
 
-  lv_obj_t* lbl_om = create_label(col_left, "OM 1-2 h");
-  lv_obj_align(lbl_om, LV_ALIGN_TOP_LEFT, 0, 200);
+  lv_obj_t* lbl_forecast = create_label(col_left, "PROGNOS 1–2 h");
+  lv_obj_align(lbl_forecast, LV_ALIGN_TOP_LEFT, 0, 200);
+
 
   lv_obj_t* lbl_future = create_label(col_left,
     "15.3 m/s  ONO\n"

@@ -13,7 +13,6 @@ för projektet Klimat_Display2_PIO.
       - Initiera LVGL (minimal setup)
       - Dummy-layout för 7.5" E-Ink (titel, tid, status)
       - Visa WiFi-status (IP, RSSI)
-      - *(Jag hjälper till att skriva Steg 6 i backlog-/checklist-format)*
 
 ---
 
