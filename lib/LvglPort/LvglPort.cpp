@@ -96,6 +96,18 @@ static lv_obj_t* create_label(lv_obj_t* parent, const char* txt) {
   return l;
 }
 
+static void apply_text_style_title(lv_obj_t* lbl) {
+  lv_obj_set_style_text_font(lbl, &lv_font_montserrat_14, 0);
+  lv_obj_set_style_text_color(lbl, lv_color_black(), 0);
+}
+
+static void apply_text_style_value(lv_obj_t* lbl) {
+  lv_obj_set_style_text_font(lbl, &lv_font_montserrat_14, 0);
+  lv_obj_set_style_text_color(lbl, lv_color_black(), 0);
+}
+
+
+
 // Bygger layouten direkt på scr (ingen page manager ännu)
 static void ui_build_page1(lv_obj_t* parent) {
   // Nollställ lite styling så vi får full kontroll över pixelbredden
@@ -111,6 +123,9 @@ static void ui_build_page1(lv_obj_t* parent) {
   const lv_coord_t W_MID   = 260;
   const lv_coord_t W_RIGHT = 270;
   const lv_coord_t H = 480 - 20; // parent padding 10+10
+
+  const lv_coord_t Y_SECTION_DIV = 220;   // samma som vänsterstrecket just nu
+
 
   lv_obj_t* col_left  = create_box(parent, W_LEFT,  H, false);
   lv_obj_t* sep1      = create_box(parent, 1,       H, false);
@@ -145,7 +160,7 @@ static void ui_build_page1(lv_obj_t* parent) {
   lv_obj_t* line = create_box(col_left, W_LEFT - 28, 1, false);
   lv_obj_set_style_bg_opa(line, LV_OPA_100, 0);
   lv_obj_set_style_bg_color(line, lv_color_black(), 0);
-  lv_obj_align(line, LV_ALIGN_TOP_LEFT, 0, 220);
+  lv_obj_align(line, LV_ALIGN_TOP_LEFT, 0, Y_SECTION_DIV);
 
   lv_obj_t* lbl_forecast = create_label(col_left, "PROGNOS 1–2 h");
   lv_obj_align(lbl_forecast, LV_ALIGN_TOP_LEFT, 0, 200);
@@ -219,36 +234,49 @@ static void ui_build_page1(lv_obj_t* parent) {
   }
     // --- END MID: Rain probability bars ---
 
-  // RIGHT: UTE/INNE + Atmosfar
-  lv_obj_set_style_pad_all(col_right, 14, 0);
 
-  lv_obj_t* lbl_ute = create_label(col_right, "UTE");
-  lv_obj_align(lbl_ute, LV_ALIGN_TOP_LEFT, 0, 0);
+// RIGHT: UTE/INNE + Atmosfär
+// RIGHT: UTE/INNE + Atmosfär
+lv_obj_set_style_pad_all(col_right, 14, 0);
 
-  lv_obj_t* ute_val = create_label(col_right, "-22.3 C");
-  lv_obj_align(ute_val, LV_ALIGN_TOP_LEFT, 0, 40);
+// --- UTE ---
+lv_obj_t* lbl_ute = create_label(col_right, "UTE");
+apply_text_style_title(lbl_ute);
+lv_obj_align(lbl_ute, LV_ALIGN_TOP_LEFT, 0, 0);
 
-  lv_obj_t* lbl_inne = create_label(col_right, "INNE");
-  lv_obj_align(lbl_inne, LV_ALIGN_TOP_LEFT, 0, 140);
+lv_obj_t* ute_val = create_label(col_right, "-22.3 °C");
+apply_text_style_value(ute_val);
+lv_obj_align(ute_val, LV_ALIGN_TOP_LEFT, 0, 22);
 
-  lv_obj_t* inne_val = create_label(col_right, "24.2 C");
-  lv_obj_align(inne_val, LV_ALIGN_TOP_LEFT, 0, 180);
+// --- INNE ---
+lv_obj_t* lbl_inne = create_label(col_right, "INNE");
+apply_text_style_title(lbl_inne);
+lv_obj_align(lbl_inne, LV_ALIGN_TOP_LEFT, 0, 110);
 
-  lv_obj_t* line2 = create_box(col_right, W_RIGHT - 28, 1, false);
-  lv_obj_set_style_bg_opa(line2, LV_OPA_100, 0);
-  lv_obj_set_style_bg_color(line2, lv_color_black(), 0);
-  lv_obj_align(line2, LV_ALIGN_TOP_LEFT, 0, 260);
+lv_obj_t* inne_val = create_label(col_right, "24.2 °C");
+apply_text_style_value(inne_val);
+lv_obj_align(inne_val, LV_ALIGN_TOP_LEFT, 0, 132);
 
-  lv_obj_t* lbl_atm = create_label(col_right, "Atmosfar");
-  lv_obj_align(lbl_atm, LV_ALIGN_TOP_LEFT, 0, 280);
+// Divider
+lv_obj_t* line2 = create_box(col_right, W_RIGHT - 28, 1, false);
+lv_obj_set_style_bg_opa(line2, LV_OPA_100, 0);
+lv_obj_set_style_bg_color(line2, lv_color_black(), 0);
+lv_obj_align(line2, LV_ALIGN_TOP_LEFT, 0, Y_SECTION_DIV);
 
-  lv_obj_t* atm_vals = create_label(col_right,
-    "Tryck: 1000.3 mbar\n"
-    "Fukt:  90 %");
-  lv_obj_align(atm_vals, LV_ALIGN_TOP_LEFT, 0, 320);
+// --- Atmosfär ---
+lv_obj_t* lbl_atm = create_label(col_right, "ATMOSFÄR");
+apply_text_style_title(lbl_atm);
+lv_obj_align(lbl_atm, LV_ALIGN_TOP_LEFT, 0, 248);
 
-  lv_obj_t* updated = create_label(col_right, "Uppdaterat: 1 h sedan");
-  lv_obj_align(updated, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+lv_obj_t* atm_vals = create_label(col_right,
+  "Tryck: 1000.3 mbar\n"
+  "Fukt:  90 %");
+lv_obj_align(atm_vals, LV_ALIGN_TOP_LEFT, 0, 278);
+
+// --- Updated (secondary) ---
+lv_obj_t* updated = create_label(col_right, "Uppdaterat: 1 h sedan");
+lv_obj_align(updated, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+lv_obj_set_style_text_font(updated, &lv_font_montserrat_14, 0);
 }
 
 void lvgl_port_begin() {
