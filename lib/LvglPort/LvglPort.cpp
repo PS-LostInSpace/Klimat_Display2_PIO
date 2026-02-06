@@ -34,7 +34,7 @@ static void page1_set_rain_probs(int p30, int p60, int p90) {
     clamp_int(p90, 0, 100)
   };
 
-  const lv_coord_t PLOT_H = 170;
+  const lv_coord_t PLOT_H = 150;
   const lv_coord_t MIN_H = 2;
 
   for (int i = 0; i < 3; i++) {
@@ -165,8 +165,14 @@ static void ui_build_page1(lv_obj_t* parent) {
   lv_obj_align(lbl_wx, LV_ALIGN_CENTER, 0, 0);
 
   // --- MID: Rain probability bars (30/60/90) ---
-  lv_obj_t* bars = create_box(col_mid, W_MID - 28, 220, false);
-  lv_obj_align(bars, LV_ALIGN_BOTTOM_MID, 0, -10);
+  const lv_coord_t BARS_H = 190;   // mindre höjd för att få balans
+  lv_obj_t* bars = create_box(col_mid, W_MID - 28, BARS_H, false);
+  lv_obj_align(bars, LV_ALIGN_BOTTOM_MID, 0, -14);
+  
+
+  lv_obj_t* lbl_rain = create_label(col_mid, "NEDERBÖRD (risk)");
+  lv_obj_align(lbl_rain, LV_ALIGN_TOP_LEFT, 0, 200);
+
 
   // Layout: three columns, bottom aligned
   lv_obj_set_flex_flow(bars, LV_FLEX_FLOW_ROW);
@@ -174,25 +180,29 @@ static void ui_build_page1(lv_obj_t* parent) {
   lv_obj_set_style_pad_all(bars, 0, 0);
   lv_obj_set_style_pad_gap(bars, 10, 0);
 
-  const lv_coord_t COL_W = 70;
+  lv_obj_set_style_border_width(bars, 1, 0);
+  lv_obj_set_style_border_color(bars, lv_color_black(), 0);
+
+  const lv_coord_t COL_W = 62;   // lite smalare för luftigare graf
 
   for (int i = 0; i < 3; i++) {
     // Column container
     g_rain_col[i] = lv_obj_create(bars);
     lv_obj_clear_flag(g_rain_col[i], LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_size(g_rain_col[i], COL_W, 220);
+    lv_obj_set_size(g_rain_col[i], COL_W, BARS_H);
     lv_obj_set_style_pad_all(g_rain_col[i], 0, 0);
     lv_obj_set_style_border_width(g_rain_col[i], 0, 0);
     lv_obj_set_style_bg_opa(g_rain_col[i], LV_OPA_TRANSP, 0);
 
     // Optional % label (top of bar area)
     g_rain_pct[i] = create_label(g_rain_col[i], "0%");
-    lv_obj_align(g_rain_pct[i], LV_ALIGN_TOP_MID, 0, 0);
+    lv_obj_align(g_rain_pct[i], LV_ALIGN_TOP_MID, 0, 10);
+    lv_obj_move_foreground(g_rain_pct[i]);
 
     // The bar itself (height will be updated)
     g_rain_bar[i] = lv_obj_create(g_rain_col[i]);
     lv_obj_clear_flag(g_rain_bar[i], LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_width(g_rain_bar[i], COL_W);
+    lv_obj_set_width(g_rain_bar[i], COL_W - 16);
     lv_obj_set_height(g_rain_bar[i], 2); // start minimal
 
     // Style: filled bar, no border (cleaner on E-Ink)
