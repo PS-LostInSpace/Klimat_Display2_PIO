@@ -186,20 +186,34 @@ void page1_build(lv_obj_t* parent) {
 // -------- Dynamic update --------
 
 void page1_update() {
+  // Dummy values (later from state/API)
+  const int p[3] = {15, 55, 35};
 
-    const int p[3] = {15, 55, 35};
-    const lv_coord_t PLOT_H = PLOT_H;
+  static int last_p[3] = {-1, -1, -1};
 
-    for (int i = 0; i < 3; i++) {
-        if (!g_rain_bar[i]) continue;
+  // If nothing changed, do nothing -> no LVGL invalidation -> no flush -> no blink
+  if (p[0] == last_p[0] && p[1] == last_p[1] && p[2] == last_p[2]) {
+    return;
+  }
 
-        lv_coord_t h = (p[i] * PLOT_H) / 100;
-        if (h < 2) h = 2;
+  last_p[0] = p[0];
+  last_p[1] = p[1];
+  last_p[2] = p[2];
 
-        lv_obj_set_height(g_rain_bar[i], h);
+  const lv_coord_t PLOT_H = 112;
+  const lv_coord_t MIN_H = 2;
 
-        char buf[8];
-        snprintf(buf, sizeof(buf), "%d%%", p[i]);
-        lv_label_set_text(g_rain_pct[i], buf);
-    }
+  for (int i = 0; i < 3; i++) {
+    if (!g_rain_bar[i] || !g_rain_pct[i]) continue;
+
+    lv_coord_t h = (lv_coord_t)((p[i] * PLOT_H) / 100);
+    if (h < MIN_H) h = MIN_H;
+
+    lv_obj_set_height(g_rain_bar[i], h);
+
+    char buf[8];
+    snprintf(buf, sizeof(buf), "%d%%", p[i]);
+    lv_label_set_text(g_rain_pct[i], buf);
+  }
 }
+
