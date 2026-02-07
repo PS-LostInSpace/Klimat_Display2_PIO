@@ -5,6 +5,8 @@
 #include <TFT_eSPI.h>    // Seeed_GFX / EPaper types
 
 #include "page1.h"       // Page 1 UI module (Step 8A)
+#include "PageManager.h"
+
 
 // ============================================================================
 // Display + LVGL port (E-Ink / EPaper)
@@ -93,8 +95,8 @@ void lvgl_port_begin() {
 
   // ---- UI: Page 1 only (Step 8A) ----
   lv_obj_t* scr = lv_scr_act();
-  page1_build(scr);
-  page1_update();
+  pagemgr_begin(scr);
+
 
   // Force initial EPaper refresh
   g_need_epaper_update = true;
@@ -103,6 +105,7 @@ void lvgl_port_begin() {
 void lvgl_port_loop() {
   // Run LVGL timers/animations
   lv_timer_handler();
+  pagemgr_update();
   delay(5);
 
   // Commit one physical E-Ink refresh per “frame”
