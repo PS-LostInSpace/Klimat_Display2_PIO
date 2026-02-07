@@ -20,13 +20,27 @@
 // ---- Display (Seeed_GFX EPaper) ----
 static EPaper epaper;
 
+// -----------------------------------------------------------------------------
+// E-Ink refresh policy (Step 8D)
+// -----------------------------------------------------------------------------
+static const uint32_t EINK_FULL_REFRESH_MS = 15UL * 60UL * 1000UL; // every 15 minutes
+static const uint16_t EINK_FULL_REFRESH_AFTER_N_UPDATES = 40;      // or after 40 UI updates
+
+
 // ---- LVGL draw buffers ----
 static lv_disp_draw_buf_t draw_buf;
 static lv_color_t* buf1 = nullptr;
 
 // ---- Refresh flag ----
-// LVGL flush renders into EPaper buffer; we call epaper.update() once per frame.
-static volatile bool g_need_epaper_update = false;
+// Requested E-Ink refresh level (future-proof)
+enum class EinkRefresh : uint8_t {
+  None = 0,
+  Normal,
+  Full,
+};
+
+static volatile EinkRefresh g_eink_refresh = EinkRefresh::None;
+
 
 // ----------------------------------------------------------------------------
 // Pixel format mapping: LVGL (8-bit) -> EPaper (black/white)
@@ -49,8 +63,8 @@ static void my_flush_cb(lv_disp_drv_t* disp, const lv_area_t* area, lv_color_t* 
     }
   }
 
-  // Defer the physical E-Ink refresh to lvgl_port_loop() (once per frame).
-  g_need_epaper_update = true;
+  // LVGL rendered something -> request a normal refresh
+  g_eink_refresh = EinkRefresh::Normal;
 
   lv_disp_flush_ready(disp);
 }
@@ -98,8 +112,9 @@ void lvgl_port_begin() {
   pagemgr_begin(scr);
 
 
-  // Force initial EPaper refresh
-  g_need_epaper_update = true;
+// Force initial E-Ink refresh after first LVGL render
+g_eink_refresh = EinkRefresh::Normal;
+
 }
 
 void lvgl_port_loop() {
@@ -108,17 +123,45 @@ void lvgl_port_loop() {
   pagemgr_update();
   delay(5);
 
-  // Commit one physical E-Ink refresh per “frame”
-  if (g_need_epaper_update) {
+  // ---------------------------------------------------------------------------
+  // E-Ink refresh policy: refresh only when requested, force full refresh sometimes
+  // ---------------------------------------------------------------------------
+  static uint32_t last_full_ms = 0;
+  static uint16_t updates_since_full = 0;
+
+  // If we have a pending normal refresh, check if we should upgrade to FULL
+  if (g_eink_refresh == EinkRefresh::Normal) {
+    uint32_t now = millis();
+
+    bool time_due = (last_full_ms == 0) || (now - last_full_ms >= EINK_FULL_REFRESH_MS);
+    bool count_due = (updates_since_full >= EINK_FULL_REFRESH_AFTER_N_UPDATES);
+
+    if (time_due || count_due) {
+      g_eink_refresh = EinkRefresh::Full;
+    }
+  }
+
+  if (g_eink_refresh != EinkRefresh::None) {
+
+    // NOTE: With current Seeed_GFX driver, update() is a full-panel refresh anyway.
+    // Later we can map Normal->partial and Full->full.
     epaper.update();
-    g_need_epaper_update = false;
+
+    if (g_eink_refresh == EinkRefresh::Full) {
+      last_full_ms = millis();
+      updates_since_full = 0;
+    } else {
+      updates_since_full++;
+    }
+
+    g_eink_refresh = EinkRefresh::None;
   }
 }
 
 bool lvgl_port_needs_epaper_update() {
-  return g_need_epaper_update;
+  return (g_eink_refresh != EinkRefresh::None);
 }
 
 void lvgl_port_clear_epaper_update_flag() {
-  g_need_epaper_update = false;
+  g_eink_refresh = EinkRefresh::None;
 }
