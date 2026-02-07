@@ -171,23 +171,20 @@ static void ui_build_page1(lv_obj_t* parent) {
   // ==========================================================================
   lv_obj_set_style_pad_all(col_left, 14, 0);
 
-  // Title
-  lv_obj_t* lbl_wind = create_label(col_left, "VIND");
-  lv_obj_align(lbl_wind, LV_ALIGN_TOP_LEFT, 0, 0);
-
   // Compass box
-  lv_obj_t* compass = create_box(col_left, 140, 140, true);
-  lv_obj_align(compass, LV_ALIGN_TOP_LEFT, 0, 50);
+  // Main wind compass area (primary visual element)
+  lv_obj_t* compass = create_box(col_left, 180, 180, true);
+  lv_obj_align(compass, LV_ALIGN_TOP_LEFT, 0, 10);
 
   lv_obj_t* lbl_comp = create_label(compass, "NO");
   lv_obj_align(lbl_comp, LV_ALIGN_CENTER, 0, 0);
 
   // Wind direction + speed
   lv_obj_t* lbl_dir = create_label(col_left, "NO");
-  lv_obj_align(lbl_dir, LV_ALIGN_TOP_LEFT, 160, 80);
+  lv_obj_align(lbl_dir, LV_ALIGN_TOP_LEFT, 200, 70);
 
   lv_obj_t* lbl_ms = create_label(col_left, "5.1 m/s");
-  lv_obj_align(lbl_ms, LV_ALIGN_TOP_LEFT, 160, 120);
+  lv_obj_align(lbl_ms,  LV_ALIGN_TOP_LEFT, 200, 115);
 
   // Divider
   lv_obj_t* line = create_box(col_left, W_LEFT - 28, 1, false);
