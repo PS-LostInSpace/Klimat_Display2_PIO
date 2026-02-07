@@ -1,5 +1,6 @@
 #include "PageManager.h"
 #include "page1.h"
+#include "ui_state.h"
 
 // -----------------------------------------------------------------------------
 // Internal state
@@ -18,14 +19,21 @@ static lv_obj_t* g_root = nullptr;
 // -----------------------------------------------------------------------------
 
 void pagemgr_begin(lv_obj_t* root) {
-    g_root = root;
+  g_root = root;
 
-    switch (g_current_page) {
-        case PAGE_1:
-            page1_build(g_root);
-            break;
-    }
+  // Dummy data for now (later: MQTT/API)
+  ui_state_set_rain(15, 55, 35);
+
+  switch (g_current_page) {
+    case PAGE_1:
+      page1_build(g_root);
+      // Force first update (dirty at boot anyway)
+      page1_update(ui_state_get());
+      ui_state_clear_dirty();
+      break;
+  }
 }
+
 
 
 // -----------------------------------------------------------------------------
@@ -33,9 +41,14 @@ void pagemgr_begin(lv_obj_t* root) {
 // -----------------------------------------------------------------------------
 
 void pagemgr_update() {
-    switch (g_current_page) {
-        case PAGE_1:
-            page1_update();
-            break;
-    }
+  if (!ui_state_is_dirty()) return;
+
+  switch (g_current_page) {
+    case PAGE_1:
+      page1_update(ui_state_get());
+      break;
+  }
+
+  ui_state_clear_dirty();
 }
+

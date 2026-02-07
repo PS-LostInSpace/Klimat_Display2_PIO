@@ -185,20 +185,14 @@ void page1_build(lv_obj_t* parent) {
 
 // -------- Dynamic update --------
 
-void page1_update() {
-  // Dummy values (later from state/API)
-  const int p[3] = {15, 55, 35};
+void page1_update(const ui_state_t* s) {
+  if (!s) return;
 
-  static int last_p[3] = {-1, -1, -1};
+  const int p[3] = { s->rain_p30, s->rain_p60, s->rain_p90 };
 
-  // If nothing changed, do nothing -> no LVGL invalidation -> no flush -> no blink
-  if (p[0] == last_p[0] && p[1] == last_p[1] && p[2] == last_p[2]) {
-    return;
-  }
-
-  last_p[0] = p[0];
-  last_p[1] = p[1];
-  last_p[2] = p[2];
+  static int last_p[3] = { -1, -1, -1 };
+  if (p[0] == last_p[0] && p[1] == last_p[1] && p[2] == last_p[2]) return;
+  last_p[0] = p[0]; last_p[1] = p[1]; last_p[2] = p[2];
 
   const lv_coord_t PLOT_H = 112;
   const lv_coord_t MIN_H = 2;
@@ -216,4 +210,5 @@ void page1_update() {
     lv_label_set_text(g_rain_pct[i], buf);
   }
 }
+
 
