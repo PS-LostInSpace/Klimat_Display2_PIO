@@ -10,6 +10,12 @@ static lv_obj_t* g_rain_col[3] = {nullptr, nullptr, nullptr};
 
 static const char* g_rain_t[3] = {"30", "60", "90 min"};
 
+static const lv_coord_t Y_RAIN_PERCENT = -8;
+static const lv_coord_t Y_RAIN_XLABEL  = 4;
+static const lv_coord_t Y_RAIN_BAR_BASE_Y = -20;
+static const lv_coord_t PLOT_H = 112;
+
+
 
 // -------- Helpers --------
 
@@ -126,7 +132,7 @@ void page1_build(lv_obj_t* parent) {
         lv_obj_set_size(g_rain_col[i], COL_W, BARS_H);
 
         g_rain_pct[i] = create_label(g_rain_col[i], "0%");
-        lv_obj_align(g_rain_pct[i], LV_ALIGN_TOP_MID, 0, -8);
+        lv_obj_align(g_rain_pct[i], LV_ALIGN_TOP_MID, 0, Y_RAIN_PERCENT);
 
         g_rain_bar[i] = lv_obj_create(g_rain_col[i]);
         lv_obj_set_width(g_rain_bar[i], COL_W - 16);
@@ -134,10 +140,10 @@ void page1_build(lv_obj_t* parent) {
         lv_obj_set_style_border_width(g_rain_bar[i], 0, 0);
         lv_obj_set_style_bg_opa(g_rain_bar[i], LV_OPA_100, 0);
         lv_obj_set_style_bg_color(g_rain_bar[i], lv_color_black(), 0);
-        lv_obj_align(g_rain_bar[i], LV_ALIGN_BOTTOM_MID, 0, -20);
+        lv_obj_align(g_rain_bar[i], LV_ALIGN_BOTTOM_MID, 0, Y_RAIN_BAR_BASE_Y);
 
         lv_obj_t* t = create_label(g_rain_col[i], g_rain_t[i]);
-        lv_obj_align(t, LV_ALIGN_BOTTOM_MID, 0, 4);
+        lv_obj_align(t, LV_ALIGN_BOTTOM_MID, 0, Y_RAIN_XLABEL);
     }
 
 
@@ -179,7 +185,7 @@ void page1_build(lv_obj_t* parent) {
 void page1_update() {
 
     const int p[3] = {15, 55, 35};
-    const lv_coord_t PLOT_H = 112;
+    const lv_coord_t PLOT_H = PLOT_H;
 
     for (int i = 0; i < 3; i++) {
         if (!g_rain_bar[i]) continue;
