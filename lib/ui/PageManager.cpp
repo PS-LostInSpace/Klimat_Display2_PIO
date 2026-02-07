@@ -1,5 +1,6 @@
 #include "PageManager.h"
 #include "page1.h"
+#include "page2.h"
 #include "ui_state.h"
 
 // -----------------------------------------------------------------------------
@@ -7,10 +8,14 @@
 // -----------------------------------------------------------------------------
 
 enum PageId {
-    PAGE_1 = 0,
+  PAGE_1 = 0,
+  PAGE_2 = 1,
 };
 
-static PageId g_current_page = PAGE_1;
+
+static const PageId DEFAULT_PAGE = PAGE_1;  // keep Page 1 as default
+static PageId g_current_page = DEFAULT_PAGE;
+
 static lv_obj_t* g_root = nullptr;
 
 
@@ -27,9 +32,12 @@ void pagemgr_begin(lv_obj_t* root) {
   switch (g_current_page) {
     case PAGE_1:
       page1_build(g_root);
-      // Force first update (dirty at boot anyway)
       page1_update(ui_state_get());
-      ui_state_clear_dirty();
+      break;
+
+    case PAGE_2:
+      page2_build(g_root);
+      page2_update(ui_state_get());
       break;
   }
 }
@@ -44,11 +52,11 @@ void pagemgr_update() {
   if (!ui_state_is_dirty()) return;
 
   switch (g_current_page) {
-    case PAGE_1:
-      page1_update(ui_state_get());
-      break;
+    case PAGE_1: page1_update(ui_state_get()); break;
+    case PAGE_2: page2_update(ui_state_get()); break;
   }
 
   ui_state_clear_dirty();
 }
+
 
