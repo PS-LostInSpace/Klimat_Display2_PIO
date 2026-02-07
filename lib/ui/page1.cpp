@@ -61,6 +61,9 @@ void page1_build(lv_obj_t* parent) {
 
     const lv_coord_t Y_SECTION_DIV = 220;
 
+    const lv_coord_t Y_BELOW_TITLE   = Y_SECTION_DIV + 12;
+    const lv_coord_t Y_BELOW_CONTENT = Y_SECTION_DIV + 40;
+
     lv_obj_t* col_left  = create_box(parent, W_LEFT,  H, false);
     lv_obj_t* sep1      = create_box(parent, 1,       H, false);
     lv_obj_t* col_mid   = create_box(parent, W_MID,   H, false);
@@ -93,12 +96,12 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_align(line, LV_ALIGN_TOP_LEFT, 0, Y_SECTION_DIV);
 
     lv_obj_t* lbl_forecast = create_label(col_left, "PROGNOS 1–2 h");
-    lv_obj_align(lbl_forecast, LV_ALIGN_TOP_LEFT, 0, 200);
+    lv_obj_align(lbl_forecast, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_TITLE);
 
     lv_obj_t* lbl_future = create_label(col_left,
         "15.3 m/s  ONO\n"
         "11.4 m/s  NNV");
-    lv_obj_align(lbl_future, LV_ALIGN_TOP_LEFT, 0, 260);
+    lv_obj_align(lbl_future, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_CONTENT);
 
 
     // -------- MID: Rain --------
@@ -168,12 +171,12 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_align(line2, LV_ALIGN_TOP_LEFT, 0, Y_SECTION_DIV);
 
     lv_obj_t* lbl_atm = create_label(col_right, "ATMOSFÄR");
-    lv_obj_align(lbl_atm, LV_ALIGN_TOP_LEFT, 0, 248);
+    lv_obj_align(lbl_atm, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_TITLE);
 
     lv_obj_t* atm_vals = create_label(col_right,
         "Tryck: 1000.3 mbar\n"
         "Fukt:  90 %");
-    lv_obj_align(atm_vals, LV_ALIGN_TOP_LEFT, 0, 278);
+    lv_obj_align(atm_vals, LV_ALIGN_TOP_LEFT, 0,  Y_BELOW_CONTENT);
 
     lv_obj_t* updated = create_label(col_right, "Uppdaterat: 1 h sedan");
     lv_obj_align(updated, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
