@@ -3,6 +3,8 @@
 #include <lvgl.h>
 #include "driver.h"      // BOARD_SCREEN_COMBO 520
 #include <TFT_eSPI.h>
+#include "page1.h"
+
 
 // ---- Display (Seeed_GFX EPaper) ----
 static EPaper epaper;
@@ -350,11 +352,11 @@ void lvgl_port_begin() {
   lv_disp_drv_register(&disp_drv);
 
 
-  // ---- Step 7 (Step 7 page1-only) ----
+  // ---- page1-only ----
   lv_obj_t *scr = lv_scr_act();
-  ui_build_page1(scr);
+  page1_build(scr);
+  page1_update();
 
-  page1_set_rain_probs(15, 100, 35);
 
 
   // Tillfälligt: stäng av gamla uppdateringstimern (den använder labelClock/labelWifi)

@@ -17,7 +17,6 @@ för projektet Klimat_Display2_PIO.
       - Standardisera UI-konstanter (marginaler, Y_SECTION_DIV, etc.)
       - Inför “dirty flags” per sektion (för framtida e-ink update-policy)
 
-
 ---
 
 ## 🟡 Features / förbättringar
