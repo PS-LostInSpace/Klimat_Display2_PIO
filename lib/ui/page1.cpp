@@ -1,5 +1,6 @@
 #include "page1.h"
 #include <cstdio>   // snprintf
+#include <math.h>
 
 // -------- Internal UI state --------
 
@@ -42,6 +43,28 @@ static lv_obj_t* create_label(lv_obj_t* parent, const char* txt) {
     return l;
 }
 
+static void set_wind_arrow(lv_obj_t* line_head,
+                           lv_coord_t size,
+                           int16_t deg_from_north) {
+    const float deg2rad = 3.1415926f / 180.0f;
+    const float a = (deg_from_north - 90) * deg2rad;
+    const float cx = size / 2.0f;
+    const float cy = size / 2.0f;
+    const float r = (size / 2.0f) - 6.0f;
+    const float head_len = 22.0f;
+    const float head_ang = 12.0f * deg2rad;
+
+    static lv_point_t head_pts[4];
+    head_pts[0] = {(lv_coord_t)(cx + (r - 5.0f) * cosf(a)),
+                   (lv_coord_t)(cy + (r - 5.0f) * sinf(a))};
+    head_pts[1] = {(lv_coord_t)(cx + (r + head_len) * cosf(a + head_ang)),
+                   (lv_coord_t)(cy + (r + head_len) * sinf(a + head_ang))};
+    head_pts[2] = {(lv_coord_t)(cx + (r + head_len) * cosf(a - head_ang)),
+                   (lv_coord_t)(cy + (r + head_len) * sinf(a - head_ang))};
+    head_pts[3] = head_pts[0];
+    lv_line_set_points(line_head, head_pts, 4);
+}
+
 
 // -------- Page 1 layout --------
 
@@ -78,11 +101,18 @@ void page1_build(lv_obj_t* parent) {
     // -------- LEFT: Wind --------
     lv_obj_set_style_pad_all(col_left, 14, 0);
 
-    lv_obj_t* compass = create_box(col_left, 180, 180, true);
+    lv_obj_t* compass = create_box(col_left, 162, 162, false);
     lv_obj_align(compass, LV_ALIGN_TOP_LEFT, 0, 10);
+    lv_obj_set_style_bg_opa(compass, LV_OPA_0, 0);
+    lv_obj_set_style_border_width(compass, 2, 0);
+    lv_obj_set_style_border_color(compass, lv_color_black(), 0);
+    lv_obj_set_style_radius(compass, LV_RADIUS_CIRCLE, 0);
 
-    lv_obj_t* lbl_comp = create_label(compass, "NO");
-    lv_obj_align(lbl_comp, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_t* arrow_head = lv_line_create(compass);
+    lv_obj_set_style_line_width(arrow_head, 4, 0);
+    lv_obj_set_style_line_color(arrow_head, lv_color_black(), 0);
+
+    set_wind_arrow(arrow_head, 162, 315);
 
     lv_obj_t* lbl_dir = create_label(col_left, "NO");
     lv_obj_align(lbl_dir, LV_ALIGN_TOP_LEFT, 200, 70);
