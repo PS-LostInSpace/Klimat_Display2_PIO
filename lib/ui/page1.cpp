@@ -102,8 +102,13 @@ void page1_build(lv_obj_t* parent) {
     // -------- LEFT: Wind --------
     lv_obj_set_style_pad_all(col_left, 14, 0);
 
-    lv_obj_t* compass = create_box(col_left, 162, 162, false);
-    lv_obj_align(compass, LV_ALIGN_TOP_LEFT, 0, 10);
+    lv_obj_t* wind_top = create_box(col_left, W_LEFT - 28, Y_SECTION_DIV, false);
+    lv_obj_align(wind_top, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_set_style_bg_opa(wind_top, LV_OPA_0, 0);
+    lv_obj_add_flag(wind_top, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
+
+    lv_obj_t* compass = create_box(wind_top, 162, 162, false);
+    lv_obj_align(compass, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_bg_opa(compass, LV_OPA_0, 0);
     lv_obj_set_style_border_width(compass, 2, 0);
     lv_obj_set_style_border_color(compass, lv_color_black(), 0);
@@ -115,11 +120,31 @@ void page1_build(lv_obj_t* parent) {
 
     set_wind_arrow(arrow_head, 162, 315);
 
-    lv_obj_t* lbl_dir = create_label(col_left, "NO");
-    lv_obj_align(lbl_dir, LV_ALIGN_TOP_LEFT, 200, 70);
+    lv_obj_t* lbl_title = create_label(wind_top, "Vind fran");
+    lv_obj_align_to(lbl_title, compass, LV_ALIGN_OUT_TOP_MID, 0, -21);
 
-    lv_obj_t* lbl_ms = create_label(col_left, "5.1 m/s");
-    lv_obj_align(lbl_ms, LV_ALIGN_TOP_LEFT, 200, 115);
+    lv_obj_t* lbl_n = create_label(wind_top, "N");
+    lv_obj_set_style_text_font(lbl_n, &lv_font_montserrat_12, 0);
+    lv_obj_align_to(lbl_n, compass, LV_ALIGN_OUT_TOP_MID, 0, -2);
+
+    lv_obj_t* lbl_dir = create_label(compass, "VNV");
+    lv_obj_set_style_text_font(lbl_dir, &lv_font_montserrat_20, 0);
+    lv_obj_set_width(lbl_dir, 80);
+    lv_obj_set_style_text_align(lbl_dir, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(lbl_dir, LV_ALIGN_CENTER, 0, -20);
+
+    lv_obj_t* speed_row = create_box(compass, LV_SIZE_CONTENT, LV_SIZE_CONTENT, false);
+    lv_obj_set_style_bg_opa(speed_row, LV_OPA_0, 0);
+    lv_obj_set_flex_flow(speed_row, LV_FLEX_FLOW_ROW);
+    lv_obj_set_style_pad_gap(speed_row, 4, 0);
+    lv_obj_align(speed_row, LV_ALIGN_CENTER, 0, 18);
+
+    lv_obj_t* lbl_speed = create_label(speed_row, "2.3");
+    lv_obj_set_style_text_font(lbl_speed, &lv_font_montserrat_16, 0);
+
+    lv_obj_t* lbl_ms = create_label(speed_row, "m/s");
+    lv_obj_set_style_text_font(lbl_ms, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_pad_top(lbl_ms, 2, 0);
 
     lv_obj_t* line = create_box(col_left, W_LEFT - 28, 1, false);
     lv_obj_set_style_bg_opa(line, LV_OPA_100, 0);
