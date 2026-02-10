@@ -121,7 +121,7 @@ void page1_build(lv_obj_t* parent) {
     set_wind_arrow(arrow_head, 162, 315);
 
     lv_obj_t* lbl_title = create_label(wind_top, "Vind fran");
-    lv_obj_align_to(lbl_title, compass, LV_ALIGN_OUT_TOP_MID, 0, -21);
+    lv_obj_align(lbl_title, LV_ALIGN_TOP_LEFT, 0, 0);
 
     lv_obj_t* lbl_n = create_label(wind_top, "N");
     lv_obj_set_style_text_font(lbl_n, &lv_font_montserrat_12, 0);
