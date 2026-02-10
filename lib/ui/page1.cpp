@@ -17,7 +17,6 @@ static const lv_coord_t Y_RAIN_BAR_BASE_Y = -20;
 static const lv_coord_t PLOT_H = 112;
 
 
-
 // -------- Helpers --------
 
 static int clamp_int(int v, int lo, int hi) {
