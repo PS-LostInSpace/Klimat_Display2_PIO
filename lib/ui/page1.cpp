@@ -119,7 +119,7 @@ void page1_build(lv_obj_t* parent) {
 
     set_wind_arrow(arrow_head, 162, 315);
 
-    lv_obj_t* lbl_title = create_label(wind_top, "Vind fran");
+    lv_obj_t* lbl_title = create_label(wind_top, "Vind från");
     lv_obj_align(lbl_title, LV_ALIGN_TOP_LEFT, 0, 0);
 
     lv_obj_t* lbl_n = create_label(wind_top, "N");
@@ -150,7 +150,7 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_set_style_bg_color(line, lv_color_black(), 0);
     lv_obj_align(line, LV_ALIGN_TOP_LEFT, 0, Y_SECTION_DIV);
 
-    lv_obj_t* lbl_forecast = create_label(col_left, "PROGNOS 1–2 h");
+    lv_obj_t* lbl_forecast = create_label(col_left, "PROGNOS 1-2 h");
     lv_obj_align(lbl_forecast, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_TITLE);
 
     lv_obj_t* lbl_future = create_label(col_left,
@@ -212,12 +212,14 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_align(lbl_ute, LV_ALIGN_TOP_LEFT, 0, 0);
 
     lv_obj_t* ute_val = create_label(col_right, "-22.3 °C");
+    lv_obj_set_style_text_font(ute_val, &lv_font_montserrat_48, 0);
     lv_obj_align(ute_val, LV_ALIGN_TOP_LEFT, 0, 22);
 
     lv_obj_t* lbl_inne = create_label(col_right, "INNE");
     lv_obj_align(lbl_inne, LV_ALIGN_TOP_LEFT, 0, 110);
 
     lv_obj_t* inne_val = create_label(col_right, "24.2 °C");
+    lv_obj_set_style_text_font(inne_val, &lv_font_montserrat_40, 0);
     lv_obj_align(inne_val, LV_ALIGN_TOP_LEFT, 0, 132);
 
     lv_obj_t* line2 = create_box(col_right, W_RIGHT - 28, 1, false);
