@@ -47,20 +47,21 @@ static void set_wind_arrow(lv_obj_t* line_head,
                            lv_coord_t size,
                            int16_t deg_from_north) {
     const float deg2rad = 3.1415926f / 180.0f;
-    const float a = (deg_from_north - 90) * deg2rad;
+    const float a = deg_from_north * deg2rad;
     const float cx = size / 2.0f;
     const float cy = size / 2.0f;
     const float r = (size / 2.0f) - 6.0f;
-    const float head_len = 22.0f;
-    const float head_ang = 12.0f * deg2rad;
+    const float tip_inset = 5.0f;
+    const float base_outset = 16.0f;
+    const float head_ang = 7.0f * deg2rad;
 
     static lv_point_t head_pts[4];
-    head_pts[0] = {(lv_coord_t)(cx + (r - 5.0f) * cosf(a)),
-                   (lv_coord_t)(cy + (r - 5.0f) * sinf(a))};
-    head_pts[1] = {(lv_coord_t)(cx + (r + head_len) * cosf(a + head_ang)),
-                   (lv_coord_t)(cy + (r + head_len) * sinf(a + head_ang))};
-    head_pts[2] = {(lv_coord_t)(cx + (r + head_len) * cosf(a - head_ang)),
-                   (lv_coord_t)(cy + (r + head_len) * sinf(a - head_ang))};
+    head_pts[0] = {(lv_coord_t)(cx + (r - tip_inset) * sinf(a)),
+                   (lv_coord_t)(cy - (r - tip_inset) * cosf(a))};
+    head_pts[1] = {(lv_coord_t)(cx + (r + base_outset) * sinf(a + head_ang)),
+                   (lv_coord_t)(cy - (r + base_outset) * cosf(a + head_ang))};
+    head_pts[2] = {(lv_coord_t)(cx + (r + base_outset) * sinf(a - head_ang)),
+                   (lv_coord_t)(cy - (r + base_outset) * cosf(a - head_ang))};
     head_pts[3] = head_pts[0];
     lv_line_set_points(line_head, head_pts, 4);
 }
