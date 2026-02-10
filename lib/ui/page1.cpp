@@ -128,7 +128,7 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_align_to(lbl_n, compass, LV_ALIGN_OUT_TOP_MID, 0, -2);
 
     lv_obj_t* lbl_dir = create_label(compass, "VNV");
-    lv_obj_set_style_text_font(lbl_dir, &lv_font_montserrat_20, 0);
+    lv_obj_set_style_text_font(lbl_dir, &lv_font_montserrat_28, 0);
     lv_obj_set_width(lbl_dir, 80);
     lv_obj_set_style_text_align(lbl_dir, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(lbl_dir, LV_ALIGN_CENTER, 0, -20);
@@ -140,11 +140,11 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_align(speed_row, LV_ALIGN_CENTER, 0, 18);
 
     lv_obj_t* lbl_speed = create_label(speed_row, "2.3");
-    lv_obj_set_style_text_font(lbl_speed, &lv_font_montserrat_16, 0);
+    lv_obj_set_style_text_font(lbl_speed, &lv_font_montserrat_24, 0);
 
     lv_obj_t* lbl_ms = create_label(speed_row, "m/s");
-    lv_obj_set_style_text_font(lbl_ms, &lv_font_montserrat_12, 0);
-    lv_obj_set_style_pad_top(lbl_ms, 2, 0);
+    lv_obj_set_style_text_font(lbl_ms, &lv_font_montserrat_16, 0);
+    lv_obj_set_style_pad_top(lbl_ms, 6, 0);
 
     lv_obj_t* line = create_box(col_left, W_LEFT - 28, 1, false);
     lv_obj_set_style_bg_opa(line, LV_OPA_100, 0);
