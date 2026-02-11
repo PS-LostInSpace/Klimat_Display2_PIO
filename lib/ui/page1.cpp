@@ -1,4 +1,5 @@
 #include "page1.h"
+#include "fonts/kd2_fonts.h"
 #include <cstdio>   // snprintf
 #include <math.h>
 
@@ -120,14 +121,15 @@ void page1_build(lv_obj_t* parent) {
     set_wind_arrow(arrow_head, 162, 315);
 
     lv_obj_t* lbl_title = create_label(wind_top, "Vind från");
+    ui_set_font(lbl_title, UI_FONT_SUBTITLE);
     lv_obj_align(lbl_title, LV_ALIGN_TOP_LEFT, 0, 0);
 
     lv_obj_t* lbl_n = create_label(wind_top, "N");
-    lv_obj_set_style_text_font(lbl_n, &lv_font_montserrat_12, 0);
+    ui_set_font(lbl_n, UI_FONT_TINY);
     lv_obj_align_to(lbl_n, compass, LV_ALIGN_OUT_TOP_MID, 0, -2);
 
     lv_obj_t* lbl_dir = create_label(compass, "VNV");
-    lv_obj_set_style_text_font(lbl_dir, &lv_font_montserrat_28, 0);
+    ui_set_font(lbl_dir, UI_FONT_SUBTITLE);
     lv_obj_set_width(lbl_dir, 80);
     lv_obj_set_style_text_align(lbl_dir, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(lbl_dir, LV_ALIGN_CENTER, 0, -20);
@@ -139,10 +141,9 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_align(speed_row, LV_ALIGN_CENTER, 0, 18);
 
     lv_obj_t* lbl_speed = create_label(speed_row, "2.3");
-    lv_obj_set_style_text_font(lbl_speed, &lv_font_montserrat_24, 0);
 
     lv_obj_t* lbl_ms = create_label(speed_row, "m/s");
-    lv_obj_set_style_text_font(lbl_ms, &lv_font_montserrat_16, 0);
+    ui_set_font(lbl_ms, UI_FONT_SMALL);
     lv_obj_set_style_pad_top(lbl_ms, 6, 0);
 
     lv_obj_t* line = create_box(col_left, W_LEFT - 28, 1, false);
@@ -151,6 +152,7 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_align(line, LV_ALIGN_TOP_LEFT, 0, Y_SECTION_DIV);
 
     lv_obj_t* lbl_forecast = create_label(col_left, "PROGNOS 1-2 h");
+    ui_set_font(lbl_forecast, UI_FONT_SUBTITLE);
     lv_obj_align(lbl_forecast, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_TITLE);
 
     lv_obj_t* lbl_future = create_label(col_left,
@@ -177,6 +179,7 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_set_style_border_color(bars, lv_color_black(), 0);
 
     lv_obj_t* lbl_rain = create_label(col_mid, "NEDERBÖRD (risk)");
+    ui_set_font(lbl_rain, UI_FONT_SUBTITLE);
     lv_obj_align(lbl_rain, LV_ALIGN_TOP_LEFT, 0, 200);
 
     lv_obj_set_flex_flow(bars, LV_FLEX_FLOW_ROW);
@@ -209,17 +212,19 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_set_style_pad_all(col_right, 14, 0);
 
     lv_obj_t* lbl_ute = create_label(col_right, "UTE");
+    ui_set_font(lbl_ute, UI_FONT_SUBTITLE);
     lv_obj_align(lbl_ute, LV_ALIGN_TOP_LEFT, 0, 0);
 
     lv_obj_t* ute_val = create_label(col_right, "-22.3 °C");
-    lv_obj_set_style_text_font(ute_val, &lv_font_montserrat_48, 0);
+    ui_set_font(ute_val, UI_FONT_H1);
     lv_obj_align(ute_val, LV_ALIGN_TOP_LEFT, 0, 22);
 
     lv_obj_t* lbl_inne = create_label(col_right, "INNE");
+    ui_set_font(lbl_inne, UI_FONT_SUBTITLE);
     lv_obj_align(lbl_inne, LV_ALIGN_TOP_LEFT, 0, 110);
 
     lv_obj_t* inne_val = create_label(col_right, "24.2 °C");
-    lv_obj_set_style_text_font(inne_val, &lv_font_montserrat_40, 0);
+    ui_set_font(inne_val, UI_FONT_H2);
     lv_obj_align(inne_val, LV_ALIGN_TOP_LEFT, 0, 132);
 
     lv_obj_t* line2 = create_box(col_right, W_RIGHT - 28, 1, false);
@@ -228,6 +233,7 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_align(line2, LV_ALIGN_TOP_LEFT, 0, Y_SECTION_DIV);
 
     lv_obj_t* lbl_atm = create_label(col_right, "ATMOSFÄR");
+    ui_set_font(lbl_atm, UI_FONT_SUBTITLE);
     lv_obj_align(lbl_atm, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_TITLE);
 
     lv_obj_t* atm_vals = create_label(col_right,
@@ -236,6 +242,7 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_align(atm_vals, LV_ALIGN_TOP_LEFT, 0,  Y_BELOW_CONTENT);
 
     lv_obj_t* updated = create_label(col_right, "Uppdaterat: 1 h sedan");
+    ui_set_font(updated, UI_FONT_SMALL);
     lv_obj_align(updated, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
 }
 

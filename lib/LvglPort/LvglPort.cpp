@@ -6,6 +6,7 @@
 
 #include "page1.h"       // Page 1 UI module (Step 8A)
 #include "PageManager.h"
+#include "fonts/kd2_fonts.h"
 
 
 // ============================================================================
@@ -25,6 +26,12 @@ static EPaper epaper;
 // -----------------------------------------------------------------------------
 static const uint32_t EINK_FULL_REFRESH_MS = 15UL * 60UL * 1000UL; // every 15 minutes
 static const uint16_t EINK_FULL_REFRESH_AFTER_N_UPDATES = 40;      // or after 40 UI updates
+
+
+#ifndef KD2_LVCONF_LOADED
+#error "lv_conf.h is NOT being used by LVGL build!"
+#endif
+
 
 
 // ---- LVGL draw buffers ----
@@ -109,6 +116,7 @@ void lvgl_port_begin() {
 
   // ---- UI: Page 1 only (Step 8A) ----
   lv_obj_t* scr = lv_scr_act();
+  lv_obj_set_style_text_font(scr, UI_FONT_BODY, LV_PART_MAIN);
   pagemgr_begin(scr);
 
 

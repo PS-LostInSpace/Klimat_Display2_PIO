@@ -2,6 +2,10 @@
 #include <Wire.h>
 #include "config.h"
 
+#include "lv_conf.h" // LVGL config (must be included before lvgl.h)
+#include <lvgl.h> 
+
+
 #ifdef HAS_WIFI
 #include "AppNetwork.h"
 #endif

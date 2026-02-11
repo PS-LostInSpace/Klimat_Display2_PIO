@@ -1,4 +1,5 @@
 #include "page2.h"
+#include "fonts/kd2_fonts.h"
 
 // Simple stub: show a centered label
 static lv_obj_t* g_label = nullptr;
