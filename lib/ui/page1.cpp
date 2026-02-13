@@ -126,7 +126,7 @@ void page1_build(lv_obj_t* parent) {
     // Raise the whole compass package a bit to better center it in the area
     lv_obj_align(compass_wrap, LV_ALIGN_CENTER, 0, -10);
 
-    lv_obj_t* compass = create_box(compass_wrap, 162, 162, false);
+    lv_obj_t* compass = create_box(compass_wrap, 180, 180, false);
     lv_obj_align(compass, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_bg_opa(compass, LV_OPA_0, 0);
     lv_obj_set_style_border_width(compass, 2, 0);
@@ -137,24 +137,24 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_set_style_line_width(arrow_head, 4, 0);
     lv_obj_set_style_line_color(arrow_head, lv_color_black(), 0);
 
-    set_wind_arrow(arrow_head, 162, 315);
+    set_wind_arrow(arrow_head, 180, 315);
 
     // Add cardinal directions N, O, S, V around the compass (like N at 0/360)
     lv_obj_t* lbl_n = create_label(compass_wrap, "N");
     ui_set_font(lbl_n, UI_FONT_SMALL);
-    lv_obj_align_to(lbl_n, compass, LV_ALIGN_OUT_TOP_MID, 0, -4);
+    lv_obj_align_to(lbl_n, compass, LV_ALIGN_OUT_TOP_MID, 0, -10);
 
     lv_obj_t* lbl_o = create_label(compass_wrap, "O");
     ui_set_font(lbl_o, UI_FONT_SMALL);
-    lv_obj_align_to(lbl_o, compass, LV_ALIGN_OUT_RIGHT_MID, 4, 0);
+    lv_obj_align_to(lbl_o, compass, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
 
     lv_obj_t* lbl_s = create_label(compass_wrap, "S");
     ui_set_font(lbl_s, UI_FONT_SMALL);
-    lv_obj_align_to(lbl_s, compass, LV_ALIGN_OUT_BOTTOM_MID, 0, 2);
+    lv_obj_align_to(lbl_s, compass, LV_ALIGN_OUT_BOTTOM_MID, 0, 6);
 
     lv_obj_t* lbl_v = create_label(compass_wrap, "V");
     ui_set_font(lbl_v, UI_FONT_SMALL);
-    lv_obj_align_to(lbl_v, compass, LV_ALIGN_OUT_LEFT_MID, -4, 0);
+    lv_obj_align_to(lbl_v, compass, LV_ALIGN_OUT_LEFT_MID, -10, 0);
 
     // Wind direction in center
     lv_obj_t* lbl_dir = create_label(compass, "VNV");
