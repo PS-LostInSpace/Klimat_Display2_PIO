@@ -2,6 +2,7 @@
 #include "fonts/kd2_fonts.h"
 #include <cstdio>   // snprintf
 #include <math.h>
+#include "img/wx_sun_cloud_rain_128.h"   // weather icon, replace with actual icons later
 
 // -------- Internal UI state --------
 
@@ -194,12 +195,14 @@ void page1_build(lv_obj_t* parent) {
     // -------- MID: Rain --------
     lv_obj_set_style_pad_all(col_mid, 14, 0);
 
-    lv_obj_t* wx_icon = create_box(col_mid, W_MID - 28, 140, true);
+    lv_obj_t* wx_icon = create_box(col_mid, W_MID - 28, 160, false);
     lv_obj_align(wx_icon, LV_ALIGN_TOP_MID, 0, 10);
+    lv_obj_add_flag(wx_icon, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
 
-    lv_obj_t* lbl_wx = create_label(wx_icon, "[WX ICON]");
-    lv_obj_align(lbl_wx, LV_ALIGN_CENTER, 0, 0);
-
+    lv_obj_t* img = lv_img_create(wx_icon);    
+    lv_img_set_src(img, &wx_sun_cloud_rain_128);   
+    lv_obj_center(img);
+    
     lv_obj_t* lbl_rain = create_label(col_mid, "NEDERBÖRD (risk)");
     ui_set_font(lbl_rain, UI_FONT_SUBTITLE);
     lv_obj_align(lbl_rain, LV_ALIGN_TOP_LEFT, 0, Y_RAIN_TITLE);

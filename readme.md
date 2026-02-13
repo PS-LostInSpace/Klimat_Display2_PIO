@@ -47,4 +47,15 @@ Monochrome 7.5" 800x480 display using LVGL and MQTT.
 🚧 Work in progress
 
 
+\## Git
+Before startig to code
+
+git checkout develop
+git fetch --all --prune
+git pull --ff-only
+
+git checkout -b feature/<namn>
+
+
+
 
