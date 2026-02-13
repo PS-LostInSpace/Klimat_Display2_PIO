@@ -85,7 +85,7 @@ void page1_build(lv_obj_t* parent) {
 
     const lv_coord_t Y_SECTION_DIV = 220;
 
-    const lv_coord_t FEELS_Y_OFFSET = 8;
+    const lv_coord_t FEELS_Y_OFFSET = 16;
 
     const lv_coord_t Y_BELOW_TITLE   = Y_SECTION_DIV + 12;
     const lv_coord_t Y_BELOW_CONTENT = Y_SECTION_DIV + 54;
@@ -142,7 +142,7 @@ void page1_build(lv_obj_t* parent) {
     // Add cardinal directions N, O, S, V around the compass (like N at 0/360)
     lv_obj_t* lbl_n = create_label(compass_wrap, "N");
     ui_set_font(lbl_n, UI_FONT_SMALL);
-    lv_obj_align_to(lbl_n, compass, LV_ALIGN_OUT_TOP_MID, 0, -10);
+    lv_obj_align_to(lbl_n, compass, LV_ALIGN_OUT_TOP_MID, 0, -6);
 
     lv_obj_t* lbl_o = create_label(compass_wrap, "O");
     ui_set_font(lbl_o, UI_FONT_SMALL);
