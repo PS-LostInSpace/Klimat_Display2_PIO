@@ -85,22 +85,25 @@ void page1_build(lv_obj_t* parent) {
 
     const lv_coord_t Y_SECTION_DIV = 220;
 
-    // Tweaks for spacing
+    const lv_coord_t FEELS_Y_OFFSET = 8;
+
     const lv_coord_t Y_BELOW_TITLE   = Y_SECTION_DIV + 12;
-    const lv_coord_t Y_BELOW_CONTENT = Y_SECTION_DIV + 54;   // was +40 -> more air under section title
+    const lv_coord_t Y_BELOW_CONTENT = Y_SECTION_DIV + 54;
 
-    // Mid-column: push rain bars area down a bit (space under "NEDERBÖRD (risk)")
     const lv_coord_t Y_RAIN_TITLE     = 200;
-    const lv_coord_t Y_BARS_BOTTOM    = -6;                  // was -14 -> bars sit lower
-    const lv_coord_t BARS_H           = 190;                 // keep height
+    const lv_coord_t Y_BARS_BOTTOM    = -6;
+    const lv_coord_t BARS_H           = 190;
 
-    const lv_coord_t Y_RAIN_XLABEL_OFFSET = 8; // was 0 -> move "30/60/90" down a bit for better spacing with bars
+    const lv_coord_t Y_RAIN_XLABEL_OFFSET = 8;
 
     lv_obj_t* col_left  = create_box(parent, W_LEFT,  H, false);
     lv_obj_t* sep1      = create_box(parent, 1,       H, false);
     lv_obj_t* col_mid   = create_box(parent, W_MID,   H, false);
     lv_obj_t* sep2      = create_box(parent, 1,       H, false);
     lv_obj_t* col_right = create_box(parent, W_RIGHT, H, false);
+
+    lv_obj_clear_flag(col_mid, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(col_mid, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
 
     lv_obj_set_style_bg_opa(sep1, LV_OPA_100, 0);
     lv_obj_set_style_bg_color(sep1, lv_color_black(), 0);
@@ -115,7 +118,15 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_set_style_bg_opa(wind_top, LV_OPA_0, 0);
     lv_obj_add_flag(wind_top, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
 
-    lv_obj_t* compass = create_box(wind_top, 162, 162, false);
+    // Compass "package" container so we can center it vertically in wind_top
+    lv_obj_t* compass_wrap = create_box(wind_top, 210, 210, false);
+    lv_obj_set_style_bg_opa(compass_wrap, LV_OPA_0, 0);
+    lv_obj_set_style_border_width(compass_wrap, 0, 0);
+    lv_obj_add_flag(compass_wrap, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
+    // Raise the whole compass package a bit to better center it in the area
+    lv_obj_align(compass_wrap, LV_ALIGN_CENTER, 0, -10);
+
+    lv_obj_t* compass = create_box(compass_wrap, 162, 162, false);
     lv_obj_align(compass, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_bg_opa(compass, LV_OPA_0, 0);
     lv_obj_set_style_border_width(compass, 2, 0);
@@ -128,36 +139,42 @@ void page1_build(lv_obj_t* parent) {
 
     set_wind_arrow(arrow_head, 162, 315);
 
-    // "Vind från:" flyttas uppåt och lite till vänster
-    lv_obj_t* lbl_title = create_label(wind_top, "Vind från:");
-    ui_set_font(lbl_title, UI_FONT_SUBTITLE);
-    lv_obj_align(lbl_title, LV_ALIGN_TOP_LEFT, -6, -6);
-
-    // N ska vara en storlek större (Tiny->Small)
-    lv_obj_t* lbl_n = create_label(wind_top, "N");
+    // Add cardinal directions N, O, S, V around the compass (like N at 0/360)
+    lv_obj_t* lbl_n = create_label(compass_wrap, "N");
     ui_set_font(lbl_n, UI_FONT_SMALL);
-    lv_obj_align_to(lbl_n, compass, LV_ALIGN_OUT_TOP_MID, 0, -6);
+    lv_obj_align_to(lbl_n, compass, LV_ALIGN_OUT_TOP_MID, 0, -4);
 
-    // VNV ska vara en storlek större (Subtitle->H2)
+    lv_obj_t* lbl_o = create_label(compass_wrap, "O");
+    ui_set_font(lbl_o, UI_FONT_SMALL);
+    lv_obj_align_to(lbl_o, compass, LV_ALIGN_OUT_RIGHT_MID, 4, 0);
+
+    lv_obj_t* lbl_s = create_label(compass_wrap, "S");
+    ui_set_font(lbl_s, UI_FONT_SMALL);
+    lv_obj_align_to(lbl_s, compass, LV_ALIGN_OUT_BOTTOM_MID, 0, 2);
+
+    lv_obj_t* lbl_v = create_label(compass_wrap, "V");
+    ui_set_font(lbl_v, UI_FONT_SMALL);
+    lv_obj_align_to(lbl_v, compass, LV_ALIGN_OUT_LEFT_MID, -4, 0);
+
+    // Wind direction in center
     lv_obj_t* lbl_dir = create_label(compass, "VNV");
     ui_set_font(lbl_dir, UI_FONT_H2);
     lv_obj_set_width(lbl_dir, 120);
     lv_obj_set_style_text_align(lbl_dir, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(lbl_dir, LV_ALIGN_CENTER, 0, -24);
 
-    lv_obj_t* speed_row = create_box(compass, LV_SIZE_CONTENT, LV_SIZE_CONTENT, false);
-    lv_obj_set_style_bg_opa(speed_row, LV_OPA_0, 0);
-    lv_obj_set_flex_flow(speed_row, LV_FLEX_FLOW_ROW);
-    lv_obj_set_style_pad_gap(speed_row, 4, 0);
-    lv_obj_align(speed_row, LV_ALIGN_CENTER, 0, 26);
+    // Speed (manual layout instead of flex to control baseline)
+    lv_obj_t* speed_box = create_box(compass, LV_SIZE_CONTENT, LV_SIZE_CONTENT, false);
+    lv_obj_set_style_bg_opa(speed_box, LV_OPA_0, 0);
+    lv_obj_align(speed_box, LV_ALIGN_CENTER, 0, 26);
 
-    // 2.3 ska vara en storlek större (default BODY, men vi sätter explicit H2 för tydlighet)
-    lv_obj_t* lbl_speed = create_label(speed_row, "2.3");
+    lv_obj_t* lbl_speed = create_label(speed_box, "20.3");
     ui_set_font(lbl_speed, UI_FONT_H2);
+    lv_obj_align(lbl_speed, LV_ALIGN_LEFT_MID, 0, 0);
 
-    lv_obj_t* lbl_ms = create_label(speed_row, "m/s");
-    ui_set_font(lbl_ms, UI_FONT_SMALL);
-    lv_obj_set_style_pad_top(lbl_ms, 10, 0);
+    lv_obj_t* lbl_ms = create_label(speed_box, "m/s");
+    ui_set_font(lbl_ms, UI_FONT_BODY);              // du ville ha BODY här
+    lv_obj_align_to(lbl_ms, lbl_speed, LV_ALIGN_OUT_RIGHT_BOTTOM, 4, -4);
 
     lv_obj_t* line = create_box(col_left, W_LEFT - 28, 1, false);
     lv_obj_set_style_bg_opa(line, LV_OPA_100, 0);
@@ -168,7 +185,6 @@ void page1_build(lv_obj_t* parent) {
     ui_set_font(lbl_forecast, UI_FONT_SUBTITLE);
     lv_obj_align(lbl_forecast, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_TITLE);
 
-    // "15.3/11.4" flyttas ned för mer luft under rubriken
     lv_obj_t* lbl_future = create_label(col_left,
         "15.3 m/s  ONO\n"
         "11.4 m/s  NNV");
@@ -188,7 +204,6 @@ void page1_build(lv_obj_t* parent) {
     ui_set_font(lbl_rain, UI_FONT_SUBTITLE);
     lv_obj_align(lbl_rain, LV_ALIGN_TOP_LEFT, 0, Y_RAIN_TITLE);
 
-    // Flytta ner ytan som innehåller bars + % + minuter
     lv_obj_t* bars = create_box(col_mid, W_MID - 28, BARS_H, false);
     lv_obj_align(bars, LV_ALIGN_BOTTOM_MID, 0, Y_BARS_BOTTOM);
 
@@ -216,9 +231,21 @@ void page1_build(lv_obj_t* parent) {
         lv_obj_set_style_bg_color(g_rain_bar[i], lv_color_black(), 0);
         lv_obj_align(g_rain_bar[i], LV_ALIGN_BOTTOM_MID, 0, Y_RAIN_BAR_BASE_Y);
 
-        lv_obj_t* t = create_label(g_rain_col[i], g_rain_t[i]);
+        lv_obj_t* t = create_label(g_rain_col[i], g_rain_t[i]);  // "30" "60" "90"
+        ui_set_font(t, UI_FONT_BODY);
+        lv_obj_set_width(t, COL_W);
+        lv_obj_set_style_text_align(t, LV_TEXT_ALIGN_CENTER, 0);
+        lv_label_set_long_mode(t, LV_LABEL_LONG_CLIP);
         lv_obj_align(t, LV_ALIGN_BOTTOM_MID, 0, Y_RAIN_XLABEL + Y_RAIN_XLABEL_OFFSET);
     }
+
+    // Add "(minuter)" under the rain area with SMALL
+    lv_obj_t* lbl_minuter = create_label(col_mid, "(minuter)");
+    ui_set_font(lbl_minuter, UI_FONT_SMALL);
+    lv_obj_set_style_pad_bottom(lbl_minuter, 2, 0);
+    lv_obj_set_style_text_align(lbl_minuter, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_width(lbl_minuter, W_MID - 28);
+    lv_obj_align_to(lbl_minuter, bars, LV_ALIGN_OUT_BOTTOM_MID, 0, 2);
 
     // -------- RIGHT: Temps & Atmosphere --------
     lv_obj_set_style_pad_all(col_right, 14, 0);
@@ -227,17 +254,27 @@ void page1_build(lv_obj_t* parent) {
     ui_set_font(lbl_ute, UI_FONT_SUBTITLE);
     lv_obj_align(lbl_ute, LV_ALIGN_TOP_LEFT, 0, 0);
 
-    lv_obj_t* ute_val = create_label(col_right, "-22.3 °C");
-    ui_set_font(ute_val, UI_FONT_H1);
+    // Split value and unit so °C can be SMALL and baseline-aligned
+    lv_obj_t* ute_val = create_label(col_right, "-22.3");
+    ui_set_font(ute_val, UI_FONT_DISPLAY1);
     lv_obj_align(ute_val, LV_ALIGN_TOP_LEFT, 0, 22);
 
-    lv_obj_t* lbl_inne = create_label(col_right, "INNE");
-    ui_set_font(lbl_inne, UI_FONT_SUBTITLE);
-    lv_obj_align(lbl_inne, LV_ALIGN_TOP_LEFT, 0, 110);
+    lv_obj_t* ute_unit = create_label(col_right, "°C");
+    ui_set_font(ute_unit, UI_FONT_BODY);
+    lv_obj_align_to(ute_unit, ute_val, LV_ALIGN_OUT_RIGHT_BOTTOM, 6, -10);
 
-    lv_obj_t* inne_val = create_label(col_right, "24.2 °C");
-    ui_set_font(inne_val, UI_FONT_H2);
-    lv_obj_align(inne_val, LV_ALIGN_TOP_LEFT, 0, 132);
+    // Replace INNE with KÄNNS SOM
+    lv_obj_t* lbl_feels = create_label(col_right, "KÄNNS SOM");
+    ui_set_font(lbl_feels, UI_FONT_BODY);
+    lv_obj_align(lbl_feels, LV_ALIGN_TOP_LEFT, 0, 110 + FEELS_Y_OFFSET);
+
+    lv_obj_t* feels_val = create_label(col_right, "-23.9");
+    ui_set_font(feels_val, UI_FONT_H1);
+    lv_obj_align(feels_val, LV_ALIGN_TOP_LEFT, 0, 132 + FEELS_Y_OFFSET);
+
+    lv_obj_t* feels_unit = create_label(col_right, "°C");
+    ui_set_font(feels_unit, UI_FONT_BODY);
+    lv_obj_align_to(feels_unit, feels_val, LV_ALIGN_OUT_RIGHT_BOTTOM, 6, -4);
 
     lv_obj_t* line2 = create_box(col_right, W_RIGHT - 28, 1, false);
     lv_obj_set_style_bg_opa(line2, LV_OPA_100, 0);
@@ -248,7 +285,6 @@ void page1_build(lv_obj_t* parent) {
     ui_set_font(lbl_atm, UI_FONT_SUBTITLE);
     lv_obj_align(lbl_atm, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_TITLE);
 
-    // Flytta ned tryck/fukt för mer luft till "ATMOSFÄR"
     lv_obj_t* atm_vals = create_label(col_right,
         "Tryck: 1000.3 mbar\n"
         "Fukt:  90 %");
@@ -258,6 +294,7 @@ void page1_build(lv_obj_t* parent) {
     ui_set_font(updated, UI_FONT_SMALL);
     lv_obj_align(updated, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
 }
+
 
 
 // -------- Dynamic update --------
