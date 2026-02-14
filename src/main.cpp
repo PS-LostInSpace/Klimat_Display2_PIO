@@ -26,6 +26,7 @@ void setup() {
 
 #ifdef HAS_WIFI
   network_begin();
+  kd2_mqtt_begin();
 #endif
 
 #ifdef HAS_WEB_OTA
@@ -45,6 +46,7 @@ void setup() {
 void loop() {
 #ifdef HAS_WIFI
   network_loop();
+  kd2_mqtt_loop();
 #endif
 
 #ifdef HAS_WEB_OTA

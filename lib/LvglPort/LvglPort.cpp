@@ -37,7 +37,7 @@ static const uint16_t EINK_FULL_REFRESH_AFTER_N_UPDATES = 40;      // or after 4
 static ui_state_t g_state;
 
 static volatile bool g_has_mqtt_ui_msg = false;
-static char g_ui_json_buf[512];     // justera vid behov
+static char g_ui_json_buf[1024];    // justera vid behov
 static size_t g_ui_json_len = 0;
 
 void lvgl_port_on_ui_json(const char* payload, size_t len) {
@@ -137,7 +137,6 @@ void lvgl_port_begin() {
   lv_obj_t* scr = lv_scr_act();
   lv_obj_set_style_text_font(scr, UI_FONT_BODY, LV_PART_MAIN);
 
-  kd2_ui_apply_mqtt_json(&g_state, kd2_dummy_json(), kd2_dummy_json_len()); // kommentera för att ta bort demo injection
   pagemgr_begin(scr, &g_state);
 
 // Force initial E-Ink refresh after first LVGL render
@@ -161,6 +160,14 @@ void lvgl_port_loop() {
   }
 
   delay(5);
+
+#if KD2_USE_DUMMY_JSON
+  static bool once = false;
+  if(!once) {
+    once = true;
+    lvgl_port_on_ui_json(kd2_dummy_json(), kd2_dummy_json_len());
+  }
+#endif
 
   // ---------------------------------------------------------------------------
   // 2) Apply new UI data (JSON handoff) -> request a normal refresh
