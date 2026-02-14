@@ -45,7 +45,7 @@
 #endif
 
 // ---- MQTT config ----
-static const char* kTopicPage1 = "kd2/page1/state";
+static const char* kTopicPage1 = "home/display/kd2/page1/state";
 
 static WiFiClient espClient;
 static PubSubClient client(espClient);
@@ -74,20 +74,13 @@ static void reconnect_mqtt() {
   if(millis() - lastAttempt < intervalMs) return;
   lastAttempt = millis();
 
-  bool connected = false;
-
-#if defined(KD2_MQTT_USER) && defined(KD2_MQTT_PASS)
-  connected = client.connect("KD2_ePaper", KD2_MQTT_USER, KD2_MQTT_PASS);
-#else
-  connected = client.connect("KD2_ePaper");
-#endif
-
-  if(connected) {
+  if(client.connect("KD2_ePaper", SECRET_MQTT_USERNAME2, SECRET_MQTT_PASS2)) {
 
     intervalMs = 5000;
     fails = 0;
 
     client.subscribe(kTopicPage1);
+    Serial.printf("[MQTT] subscribed: %s\n", kTopicPage1);
     return;
   }
 
@@ -99,7 +92,11 @@ static void reconnect_mqtt() {
 
 void kd2_mqtt_begin() {
   ensure_wifi();
+#if defined(SECRET_MQTT_HOST) && defined(SECRET_MQTT_PORT)
+  client.setServer(SECRET_MQTT_HOST, SECRET_MQTT_PORT);
+#else
   client.setServer(KD2_MQTT_HOST, KD2_MQTT_PORT);
+#endif
   client.setCallback(mqtt_callback);
 }
 
@@ -112,4 +109,6 @@ void kd2_mqtt_loop() {
 static void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   if(strcmp(topic, kTopicPage1) != 0) return;
   lvgl_port_on_ui_json((const char*)payload, (size_t)length);
+  Serial.printf("[MQTT] rx topic=%s len=%u\n", topic, (unsigned)length);
+
 }
