@@ -150,16 +150,17 @@ void lvgl_port_loop() {
   // ---------------------------------------------------------------------------
   lv_timer_handler();
   pagemgr_update();
-  delay(5);
 
-  static uint32_t last_tick = 0;
-  if(millis() - last_tick > 60000) { // every minute
-    last_tick = millis();
+  static uint32_t last_minute = 0;
+  if(millis() - last_minute >= 60000) {
+    last_minute = millis();
     ui_state_set_updated(&g_state, g_state.updated_min_ago + 1);
     page1_update(&g_state);
     ui_state_clear_dirty(&g_state);
     g_eink_refresh = EinkRefresh::Normal;
   }
+
+  delay(5);
 
   // ---------------------------------------------------------------------------
   // 2) Apply new UI data (JSON handoff) -> request a normal refresh

@@ -46,9 +46,9 @@ bool kd2_ui_apply_mqtt_json(ui_state_t* s, const char* json, size_t len)
         );
     }
 
-    // --- Updated text ---
-    if (doc["updated"].is<const char*>()) {
-        ui_state_set_updated(s, doc["updated"]);
+    // --- Updated (minutes ago) ---
+    if (doc["updated_min"].is<uint16_t>()) {
+        ui_state_set_updated(s, doc["updated_min"]);
     }
 
     // --- Weather icon ---

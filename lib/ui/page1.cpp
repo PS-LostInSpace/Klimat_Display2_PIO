@@ -393,23 +393,17 @@ void page1_update(const ui_state_t* s) {
   if(s->dirty.wind) {
     if(g_lbl_wind_dir) lv_label_set_text(g_lbl_wind_dir, s->wind_dir_txt);
     set_label_float_1(g_lbl_wind_speed, s->wind_ms);
-    // TODO: rotate arrow based on s->wind_deg
   }
 
   // RAIN
   if(s->dirty.rain) {
     for(int i=0;i<3;i++) {
-      // % label
       if(g_lbl_rain_pct[i]) {
         char buf[8];
         snprintf(buf, sizeof(buf), "%u%%", (unsigned)s->rain_pct[i]);
         lv_label_set_text(g_lbl_rain_pct[i], buf);
       }
-
-      // bar height
-      if(g_rain_bar[i]) {
-        set_rain_bar_from_pct(g_rain_bar[i], s->rain_pct[i]);
-      }
+      if(g_rain_bar[i]) set_rain_bar_from_pct(g_rain_bar[i], s->rain_pct[i]);
     }
   }
 
@@ -419,7 +413,7 @@ void page1_update(const ui_state_t* s) {
     set_label_float_1(g_lbl_feels, s->feels_like_c);
   }
 
-  // ATMOSPHERE
+  // ATM
   if(s->dirty.atmosphere) {
     if(g_lbl_atm_pressure) {
       char buf[32];
@@ -433,14 +427,14 @@ void page1_update(const ui_state_t* s) {
     }
   }
 
-  // WX ICON
-  if(s->dirty.wx_icon) {
-    ui_set_weather_icon(s->wx_symbol);
-  }
-
   // FORECAST
   if(s->dirty.forecast) {
     if(g_lbl_forecast_txt) lv_label_set_text(g_lbl_forecast_txt, s->forecast_txt);
+  }
+
+  // ICON
+  if(s->dirty.wx_icon) {
+    ui_set_weather_icon(s->wx_symbol);
   }
 
   // UPDATED

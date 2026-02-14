@@ -3,13 +3,13 @@
 
 static const char* DUMMY_JSON = R"json(
 {
-  "wind": { "dir": "VNV", "speed": 2.3, "deg": 315 },
+  "wind": { "dir": "VNV", "speed": 20.3, "deg": 315 },
   "temp": { "out": -22.3, "feels": -23.9 },
   "rain": [15, 55, 35],
-  "forecast": "13.3 m/s  ONO\n11.4 m/s  NNV",
   "atm": { "pressure": 1000.3, "humidity": 90 },
-  "updated_min": 60,
-  "icon": "rain"
+  "updated_min": 0,
+  "icon": "rain",
+  "forecast": "13.3 m/s  ONO\n11.4 m/s  NNV"
 }
 )json";
 
