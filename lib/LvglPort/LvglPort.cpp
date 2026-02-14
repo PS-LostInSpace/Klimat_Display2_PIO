@@ -41,6 +41,7 @@ static char g_ui_json_buf[1024];    // justera vid behov
 static size_t g_ui_json_len = 0;
 
 void lvgl_port_on_ui_json(const char* payload, size_t len) {
+  Serial.printf("[LVGL_PORT] got json len=%u: %.*s\n", (unsigned)len, (int)len, payload);
   if(!payload || len == 0) return;
   if(len >= sizeof(g_ui_json_buf)) len = sizeof(g_ui_json_buf) - 1;
 

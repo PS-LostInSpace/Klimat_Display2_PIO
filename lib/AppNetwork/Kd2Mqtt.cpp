@@ -74,15 +74,21 @@ static void reconnect_mqtt() {
   if(millis() - lastAttempt < intervalMs) return;
   lastAttempt = millis();
 
+  Serial.printf("[MQTT] reconnect attempt host=%s port=%u\n", KD2_MQTT_HOST, (unsigned)KD2_MQTT_PORT);
+
   if(client.connect("KD2_ePaper", SECRET_MQTT_USERNAME2, SECRET_MQTT_PASS2)) {
 
     intervalMs = 5000;
     fails = 0;
 
+    Serial.println("[MQTT] connected");
+
     client.subscribe(kTopicPage1);
     Serial.printf("[MQTT] subscribed: %s\n", kTopicPage1);
     return;
   }
+
+  Serial.printf("[MQTT] connect failed, state=%d\n", client.state());
 
   // backoff (max ~5min)
   fails++;
@@ -107,8 +113,28 @@ void kd2_mqtt_loop() {
 }
 
 static void mqtt_callback(char* topic, byte* payload, unsigned int length) {
+  Serial.println("[MQTT] callback TRIGGERED");
+
+  Serial.print("[MQTT] topic: ");
+  Serial.println(topic);
+
+  Serial.print("[MQTT] payload: ");
+  Serial.write(payload, length);
+  Serial.println();
+
+  if(length == 0) {
+    Serial.println("[MQTT] empty payload ignored");
+    return;
+  }
+
   if(strcmp(topic, kTopicPage1) != 0) return;
-  lvgl_port_on_ui_json((const char*)payload, (size_t)length);
+  static char buf[1024];
+  size_t n = (length < sizeof(buf) - 1) ? length : (sizeof(buf) - 1);
+  memcpy(buf, payload, n);
+  buf[n] = '\0';
+
+  Serial.printf("[MQTT] forwarding to UI, n=%u\n", (unsigned)n);
+  lvgl_port_on_ui_json(buf, n);
   Serial.printf("[MQTT] rx topic=%s len=%u\n", topic, (unsigned)length);
 
 }
