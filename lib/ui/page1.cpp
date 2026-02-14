@@ -24,6 +24,10 @@ static lv_obj_t* g_lbl_temp_out_unit = nullptr;
 static lv_obj_t* g_lbl_feels = nullptr;
 static lv_obj_t* g_lbl_feels_unit = nullptr;
 
+static lv_obj_t* g_lbl_atm_pressure = nullptr; // e.g. "Tryck: 1000.3 mbar"
+static lv_obj_t* g_lbl_atm_humidity = nullptr; // e.g. "Fukt:  90 %"
+static lv_obj_t* g_lbl_updated      = nullptr; // e.g. "Uppdaterat: 7 min sedan"
+static lv_obj_t* g_lbl_forecast_txt = nullptr;
 
 static const char* g_rain_t[3] = {"30", "60", "90"};
 
@@ -40,6 +44,40 @@ static int clamp_int(int v, int lo, int hi) {
     if (v > hi) return hi;
     return v;
 }
+
+static void set_rain_bar_from_pct(lv_obj_t* bar, uint8_t pct) {
+  if(!bar) return;
+
+  // Total drawable height inside the column (tune if needed)
+  // If your BARS_H is 190, keep some headroom for labels.
+  const int bar_max_h = 140;  // adjust if you want taller bars
+
+  int p = clamp_int((int)pct, 0, 100);
+
+  // Height in pixels: 0% => 2px (still visible), 100% => bar_max_h
+  int h = (p * bar_max_h) / 100;
+  if(h < 2) h = 2;
+
+  lv_obj_set_height(bar, h);
+
+  // Keep same baseline (your existing constant)
+  lv_obj_align(bar, LV_ALIGN_BOTTOM_MID, 0, Y_RAIN_BAR_BASE_Y);
+}
+
+
+static void format_updated(char* out, size_t out_sz, uint16_t min_ago) {
+  if(out_sz == 0) return;
+
+  if(min_ago < 60) {
+    snprintf(out, out_sz, "Uppdaterat: %u min sedan", (unsigned)min_ago);
+  } else {
+    uint16_t h = min_ago / 60;
+    uint16_t m = min_ago % 60;
+    if(m == 0) snprintf(out, out_sz, "Uppdaterat: %u h sedan", (unsigned)h);
+    else       snprintf(out, out_sz, "Uppdaterat: %u h %u min sedan", (unsigned)h, (unsigned)m);
+  }
+}
+
 
 static lv_obj_t* create_box(lv_obj_t* parent, lv_coord_t w, lv_coord_t h, bool border = true) {
     lv_obj_t* o = lv_obj_create(parent);
@@ -202,10 +240,8 @@ void page1_build(lv_obj_t* parent) {
     ui_set_font(lbl_forecast, UI_FONT_SUBTITLE);
     lv_obj_align(lbl_forecast, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_TITLE);
 
-    lv_obj_t* lbl_future = create_label(col_left,
-        "15.3 m/s  ONO\n"
-        "11.4 m/s  NNV");
-    lv_obj_align(lbl_future, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_CONTENT);
+    g_lbl_forecast_txt = create_label(col_left, "");
+    lv_obj_align(g_lbl_forecast_txt, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_CONTENT);
 
 
     // -------- MID: Rain --------
@@ -317,16 +353,18 @@ void page1_build(lv_obj_t* parent) {
     ui_set_font(lbl_atm, UI_FONT_SUBTITLE);
     lv_obj_align(lbl_atm, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_TITLE);
 
-    lv_obj_t* atm_vals = create_label(col_right,
-        "Tryck: 1000.3 mbar\n"
-        "Fukt:  90 %");
-    lv_obj_align(atm_vals, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_CONTENT);
+    // ATMOSFÄR section (replace your atm_vals multiline label)
+    g_lbl_atm_pressure = create_label(col_right, "Tryck: --.- mbar");
+    lv_obj_align(g_lbl_atm_pressure, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_CONTENT);
 
-    lv_obj_t* updated = create_label(col_right, "Uppdaterat: 1 h sedan");
-    ui_set_font(updated, UI_FONT_SMALL);
-    lv_obj_align(updated, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+    g_lbl_atm_humidity = create_label(col_right, "Fukt:  -- %");
+    lv_obj_align_to(g_lbl_atm_humidity, g_lbl_atm_pressure, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 6);
+
+    // Updated label (store pointer)
+    g_lbl_updated = create_label(col_right, "Uppdaterat: --");
+    ui_set_font(g_lbl_updated, UI_FONT_SMALL);
+    lv_obj_align(g_lbl_updated, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
 }
-
 
 
 // -------- Dynamic update --------
@@ -355,18 +393,23 @@ void page1_update(const ui_state_t* s) {
   if(s->dirty.wind) {
     if(g_lbl_wind_dir) lv_label_set_text(g_lbl_wind_dir, s->wind_dir_txt);
     set_label_float_1(g_lbl_wind_speed, s->wind_ms);
-    // TODO later: rotate arrow based on wind_deg if you want
+    // TODO: rotate arrow based on s->wind_deg
   }
 
   // RAIN
   if(s->dirty.rain) {
     for(int i=0;i<3;i++) {
+      // % label
       if(g_lbl_rain_pct[i]) {
         char buf[8];
         snprintf(buf, sizeof(buf), "%u%%", (unsigned)s->rain_pct[i]);
         lv_label_set_text(g_lbl_rain_pct[i], buf);
       }
-      // TODO later: update bar height based on % (you already have objects)
+
+      // bar height
+      if(g_rain_bar[i]) {
+        set_rain_bar_from_pct(g_rain_bar[i], s->rain_pct[i]);
+      }
     }
   }
 
@@ -374,12 +417,20 @@ void page1_update(const ui_state_t* s) {
   if(s->dirty.temps) {
     set_label_float_1(g_lbl_temp_out, s->temp_out_c);
     set_label_float_1(g_lbl_feels, s->feels_like_c);
-    // Units are static "°C" so no need to update unless you want localization
   }
 
-  // ATMOSPHERE (optional if you have labels)
+  // ATMOSPHERE
   if(s->dirty.atmosphere) {
-    // TODO: if you later store pointers for pressure/humidity labels, update here.
+    if(g_lbl_atm_pressure) {
+      char buf[32];
+      snprintf(buf, sizeof(buf), "Tryck: %.1f mbar", s->pressure_mbar);
+      lv_label_set_text(g_lbl_atm_pressure, buf);
+    }
+    if(g_lbl_atm_humidity) {
+      char buf[24];
+      snprintf(buf, sizeof(buf), "Fukt:  %u %%", (unsigned)s->humidity_pct);
+      lv_label_set_text(g_lbl_atm_humidity, buf);
+    }
   }
 
   // WX ICON
@@ -387,12 +438,19 @@ void page1_update(const ui_state_t* s) {
     ui_set_weather_icon(s->wx_symbol);
   }
 
-  // UPDATED (optional if you have "Uppdaterat: X min")
-  if(s->dirty.updated) {
-    // TODO: update updated label if you store it
+  // FORECAST
+  if(s->dirty.forecast) {
+    if(g_lbl_forecast_txt) lv_label_set_text(g_lbl_forecast_txt, s->forecast_txt);
   }
 
-  // Clear dirty after applying
-  // NOTE: call ui_state_clear_dirty(&state) in the owner (not here) if you prefer.
+  // UPDATED
+  if(s->dirty.updated) {
+    if(g_lbl_updated) {
+      char buf[48];
+      format_updated(buf, sizeof(buf), s->updated_min_ago);
+      lv_label_set_text(g_lbl_updated, buf);
+    }
+  }
 }
+
 

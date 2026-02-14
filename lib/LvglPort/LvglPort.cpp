@@ -8,6 +8,7 @@
 #include "PageManager.h"
 #include "fonts/kd2_fonts.h"
 #include "kd2_mqtt_ui_bridge.h"
+#include "kd2_dummy_data.h" // Optional: demo data for testing without MQTT
 
 
 // ============================================================================
@@ -105,10 +106,6 @@ void lvgl_port_begin() {
 
   ui_state_init(&g_state);
 
-  // Inject demo data so we have something to show before MQTT messages arrive
-  const char* demo = R"({"wind_dir":"VNV","wind_ms":20.3,"temp_out":-22.3,"feels_like":-23.9,"rain_pct":[15,55,35],"wx_symbol":"rain","updated_min":7})";
-  lvgl_port_on_ui_json(demo, strlen(demo));
-
   // ---- LVGL draw buffer ----
   // 800px wide * N lines (partial buffer)
   const uint32_t buf_lines = 40;
@@ -139,13 +136,12 @@ void lvgl_port_begin() {
   // ---- UI: Page 1 only (Step 8A) ----
   lv_obj_t* scr = lv_scr_act();
   lv_obj_set_style_text_font(scr, UI_FONT_BODY, LV_PART_MAIN);
-  
-  ui_state_init(&g_state);
+
+  kd2_ui_apply_mqtt_json(&g_state, kd2_dummy_json(), kd2_dummy_json_len()); // kommentera för att ta bort demo injection
   pagemgr_begin(scr, &g_state);
 
 // Force initial E-Ink refresh after first LVGL render
 g_eink_refresh = EinkRefresh::Normal;
-
 }
 
 void lvgl_port_loop() {
@@ -155,6 +151,15 @@ void lvgl_port_loop() {
   lv_timer_handler();
   pagemgr_update();
   delay(5);
+
+  static uint32_t last_tick = 0;
+  if(millis() - last_tick > 60000) { // every minute
+    last_tick = millis();
+    ui_state_set_updated(&g_state, g_state.updated_min_ago + 1);
+    page1_update(&g_state);
+    ui_state_clear_dirty(&g_state);
+    g_eink_refresh = EinkRefresh::Normal;
+  }
 
   // ---------------------------------------------------------------------------
   // 2) Apply new UI data (JSON handoff) -> request a normal refresh
