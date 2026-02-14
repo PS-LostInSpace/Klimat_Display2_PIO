@@ -55,6 +55,16 @@ för projektet Klimat_Display2_PIO.
 
 ## ✅ Avklarat
 
+### Steg 8: UI-polish + fonter + ikon – klart
+- Bytt från Montserrat till NotoSans (svenska tecken ÅÄÖ fungerar)
+- Genererat LVGL-fontfiler (12/16/24/28/40/48/64/80 )
+- Infört UI-fontroller (UI_FONT_TINY/SMALL/BODY/SUBTITLE/H2/H1/DISPLAY1/DISPLAY2)
+- Fixat att LVGL verkligen använder projektets lv_conf.h (LV_CONF_H “handshake”)
+- Förfinat Page 1 typografi: större siffror, °C som separat label med baseline-känsla
+- Förfinat vindkompass: layout/centrering, NOSV, m/s-placering, bättre spacing för vindtext
+- Lagt in riktig väderikon (LVGL image .c/.h) och ersatt “[WX ICON]”
+- Justerat nederbördsdiagram (30/60/90, procent, spacing, (minuter)-label under ytan)
+
 ### Steg 7: Page 1 layout (3 kolumner) – klart
 - 3-kolumns dashboard (Vind / Nederbörd / Ute-Inne-Atmosfär)
 - Gemensam vertikal rytm över kolumner (delare + rubrik + innehåll)
