@@ -2,31 +2,51 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-// Central UI state container (future: filled by MQTT/API)
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Keep this small and stable so it can be reused across pages and projects.
 typedef struct {
-  // Rain probability (%)
-  int16_t rain_p30;
-  int16_t rain_p60;
-  int16_t rain_p90;
+  // Wind
+  char   wind_dir_txt[8];   // e.g. "VNV"
+  float  wind_ms;           // e.g. 2.3
+  int16_t wind_deg;         // optional; -1 if unknown
 
-  // Wind (future)
-  // int16_t wind_deg;
-  // float wind_ms;
+  // Rain (risk % for 30/60/90)
+  uint8_t rain_pct[3];      // 0..100
 
-  // Temps (future)
-  // float temp_out;
-  // float temp_in;
+  // Temperatures
+  float temp_out_c;         // e.g. -22.3
+  float feels_like_c;       // e.g. -23.9
 
-  // Meta
-  uint32_t updated_ms;
+  // Atmosphere
+  float pressure_mbar;      // e.g. 1000.3
+  uint8_t humidity_pct;     // e.g. 90
+
+  // Weather symbol id (from HA/MET/etc)
+  char wx_symbol[32];       // e.g. "clearsky_day" or "rain"
+
+  // UX
+  uint16_t updated_min_ago; // e.g. 7
+
+  // Dirty flags to avoid unnecessary redraws/refresh
+  struct {
+    bool wind;
+    bool rain;
+    bool temps;
+    bool atmosphere;
+    bool wx_icon;
+    bool updated;
+    bool any;
+  } dirty;
+
 } ui_state_t;
 
-// Read-only access to current state
-const ui_state_t* ui_state_get(void);
+void ui_state_init(ui_state_t* s);
+void ui_state_mark_all_dirty(ui_state_t* s);
+void ui_state_clear_dirty(ui_state_t* s);
 
-// Mark state as changed + set values
-void ui_state_set_rain(int p30, int p60, int p90);
-
-// Dirty flag API
-bool ui_state_is_dirty(void);
-void ui_state_clear_dirty(void);
+#ifdef __cplusplus
+}
+#endif

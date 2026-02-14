@@ -7,6 +7,7 @@
 #include "page1.h"       // Page 1 UI module (Step 8A)
 #include "PageManager.h"
 #include "fonts/kd2_fonts.h"
+#include "kd2_mqtt_ui_bridge.h"
 
 
 // ============================================================================
@@ -32,6 +33,21 @@ static const uint16_t EINK_FULL_REFRESH_AFTER_N_UPDATES = 40;      // or after 4
 #error "lv_conf.h is NOT being used by LVGL build!"
 #endif
 
+static ui_state_t g_state;
+
+static volatile bool g_has_mqtt_ui_msg = false;
+static char g_ui_json_buf[512];     // justera vid behov
+static size_t g_ui_json_len = 0;
+
+void lvgl_port_on_ui_json(const char* payload, size_t len) {
+  if(!payload || len == 0) return;
+  if(len >= sizeof(g_ui_json_buf)) len = sizeof(g_ui_json_buf) - 1;
+
+  memcpy(g_ui_json_buf, payload, len);
+  g_ui_json_buf[len] = '\0';
+  g_ui_json_len = len;
+  g_has_mqtt_ui_msg = true;
+}
 
 
 // ---- LVGL draw buffers ----
@@ -87,6 +103,12 @@ void lvgl_port_begin() {
   // ---- LVGL init ----
   lv_init();
 
+  ui_state_init(&g_state);
+
+  // Inject demo data so we have something to show before MQTT messages arrive
+  const char* demo = R"({"wind_dir":"VNV","wind_ms":20.3,"temp_out":-22.3,"feels_like":-23.9,"rain_pct":[15,55,35],"wx_symbol":"rain","updated_min":7})";
+  lvgl_port_on_ui_json(demo, strlen(demo));
+
   // ---- LVGL draw buffer ----
   // 800px wide * N lines (partial buffer)
   const uint32_t buf_lines = 40;
@@ -117,8 +139,9 @@ void lvgl_port_begin() {
   // ---- UI: Page 1 only (Step 8A) ----
   lv_obj_t* scr = lv_scr_act();
   lv_obj_set_style_text_font(scr, UI_FONT_BODY, LV_PART_MAIN);
-  pagemgr_begin(scr);
-
+  
+  ui_state_init(&g_state);
+  pagemgr_begin(scr, &g_state);
 
 // Force initial E-Ink refresh after first LVGL render
 g_eink_refresh = EinkRefresh::Normal;
@@ -126,31 +149,49 @@ g_eink_refresh = EinkRefresh::Normal;
 }
 
 void lvgl_port_loop() {
-  // Run LVGL timers/animations
+  // ---------------------------------------------------------------------------
+  // 1) Run LVGL timers/animations + page manager
+  // ---------------------------------------------------------------------------
   lv_timer_handler();
   pagemgr_update();
   delay(5);
 
   // ---------------------------------------------------------------------------
-  // E-Ink refresh policy: refresh only when requested, force full refresh sometimes
+  // 2) Apply new UI data (JSON handoff) -> request a normal refresh
+  // ---------------------------------------------------------------------------
+  if (g_has_mqtt_ui_msg) {
+    g_has_mqtt_ui_msg = false;
+
+    if (kd2_ui_apply_mqtt_json(&g_state, g_ui_json_buf, g_ui_json_len)) {
+      page1_update(&g_state);
+      ui_state_clear_dirty(&g_state);
+
+      // New data arrived -> request refresh
+      g_eink_refresh = EinkRefresh::Normal;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 3) E-Ink refresh policy: upgrade Normal -> Full sometimes
   // ---------------------------------------------------------------------------
   static uint32_t last_full_ms = 0;
   static uint16_t updates_since_full = 0;
 
-  // If we have a pending normal refresh, check if we should upgrade to FULL
   if (g_eink_refresh == EinkRefresh::Normal) {
-    uint32_t now = millis();
+    const uint32_t now = millis();
 
-    bool time_due = (last_full_ms == 0) || (now - last_full_ms >= EINK_FULL_REFRESH_MS);
-    bool count_due = (updates_since_full >= EINK_FULL_REFRESH_AFTER_N_UPDATES);
+    const bool time_due  = (last_full_ms == 0) || (now - last_full_ms >= EINK_FULL_REFRESH_MS);
+    const bool count_due = (updates_since_full >= EINK_FULL_REFRESH_AFTER_N_UPDATES);
 
     if (time_due || count_due) {
       g_eink_refresh = EinkRefresh::Full;
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // 4) Perform refresh when requested
+  // ---------------------------------------------------------------------------
   if (g_eink_refresh != EinkRefresh::None) {
-
     // NOTE: With current Seeed_GFX driver, update() is a full-panel refresh anyway.
     // Later we can map Normal->partial and Full->full.
     epaper.update();
@@ -165,6 +206,7 @@ void lvgl_port_loop() {
     g_eink_refresh = EinkRefresh::None;
   }
 }
+
 
 bool lvgl_port_needs_epaper_update() {
   return (g_eink_refresh != EinkRefresh::None);

@@ -2,7 +2,7 @@
 #include "fonts/kd2_fonts.h"
 #include <cstdio>   // snprintf
 #include <math.h>
-#include "img/wx_sun_cloud_rain_128.h"   // weather icon, replace with actual icons later
+#include "ui_icons.h"
 
 // -------- Internal UI state --------
 
@@ -10,6 +10,20 @@
 static lv_obj_t* g_rain_bar[3] = {nullptr, nullptr, nullptr};
 static lv_obj_t* g_rain_pct[3] = {nullptr, nullptr, nullptr};
 static lv_obj_t* g_rain_col[3] = {nullptr, nullptr, nullptr};
+
+static lv_obj_t* g_wx_img = nullptr;
+
+static lv_obj_t* g_lbl_wind_dir = nullptr;
+static lv_obj_t* g_lbl_wind_speed = nullptr;
+
+static lv_obj_t* g_lbl_rain_pct[3] = {nullptr,nullptr,nullptr};
+
+static lv_obj_t* g_lbl_temp_out = nullptr;
+static lv_obj_t* g_lbl_temp_out_unit = nullptr;
+
+static lv_obj_t* g_lbl_feels = nullptr;
+static lv_obj_t* g_lbl_feels_unit = nullptr;
+
 
 static const char* g_rain_t[3] = {"30", "60", "90"};
 
@@ -163,6 +177,7 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_set_width(lbl_dir, 120);
     lv_obj_set_style_text_align(lbl_dir, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(lbl_dir, LV_ALIGN_CENTER, 0, -24);
+    g_lbl_wind_dir = lbl_dir;
 
     // Speed (manual layout instead of flex to control baseline)
     lv_obj_t* speed_box = create_box(compass, LV_SIZE_CONTENT, LV_SIZE_CONTENT, false);
@@ -172,6 +187,7 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_t* lbl_speed = create_label(speed_box, "20.3");
     ui_set_font(lbl_speed, UI_FONT_H2);
     lv_obj_align(lbl_speed, LV_ALIGN_LEFT_MID, 0, 0);
+    g_lbl_wind_speed = lbl_speed;
 
     lv_obj_t* lbl_ms = create_label(speed_box, "m/s");
     ui_set_font(lbl_ms, UI_FONT_BODY);              // du ville ha BODY här
@@ -199,8 +215,14 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_align(wx_icon, LV_ALIGN_TOP_MID, 0, 10);
     lv_obj_add_flag(wx_icon, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
 
-    lv_obj_t* img = lv_img_create(wx_icon);    
-    lv_img_set_src(img, &wx_sun_cloud_rain_128);   
+    lv_obj_t* img = lv_img_create(wx_icon);
+    g_wx_img = img;
+    
+    // attach to icon system first
+    ui_icons_attach_weather_img(g_wx_img);
+    
+    //then set icon (fallback for now, will be replaced by MQTT data later)
+    ui_set_weather_icon("unknown");   // or "rain" as a demo
     lv_obj_center(img);
     
     lv_obj_t* lbl_rain = create_label(col_mid, "NEDERBÖRD (risk)");
@@ -225,6 +247,7 @@ void page1_build(lv_obj_t* parent) {
 
         g_rain_pct[i] = create_label(g_rain_col[i], "0%");
         lv_obj_align(g_rain_pct[i], LV_ALIGN_TOP_MID, 0, Y_RAIN_PERCENT);
+        g_lbl_rain_pct[i] = g_rain_pct[i];
 
         g_rain_bar[i] = lv_obj_create(g_rain_col[i]);
         lv_obj_set_width(g_rain_bar[i], COL_W - 16);
@@ -266,6 +289,9 @@ void page1_build(lv_obj_t* parent) {
     ui_set_font(ute_unit, UI_FONT_BODY);
     lv_obj_align_to(ute_unit, ute_val, LV_ALIGN_OUT_RIGHT_BOTTOM, 6, -10);
 
+    g_lbl_temp_out = ute_val;
+    g_lbl_temp_out_unit = ute_unit;
+
     // Replace INNE with KÄNNS SOM
     lv_obj_t* lbl_feels = create_label(col_right, "KÄNNS SOM");
     ui_set_font(lbl_feels, UI_FONT_BODY);
@@ -278,6 +304,9 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_t* feels_unit = create_label(col_right, "°C");
     ui_set_font(feels_unit, UI_FONT_BODY);
     lv_obj_align_to(feels_unit, feels_val, LV_ALIGN_OUT_RIGHT_BOTTOM, 6, -4);
+
+    g_lbl_feels = feels_val;
+    g_lbl_feels_unit = feels_unit;
 
     lv_obj_t* line2 = create_box(col_right, W_RIGHT - 28, 1, false);
     lv_obj_set_style_bg_opa(line2, LV_OPA_100, 0);
@@ -302,30 +331,68 @@ void page1_build(lv_obj_t* parent) {
 
 // -------- Dynamic update --------
 
-void page1_update(const ui_state_t* s) {
-  if (!s) return;
-
-  const int p[3] = { s->rain_p30, s->rain_p60, s->rain_p90 };
-
-  static int last_p[3] = { -1, -1, -1 };
-  if (p[0] == last_p[0] && p[1] == last_p[1] && p[2] == last_p[2]) return;
-  last_p[0] = p[0]; last_p[1] = p[1]; last_p[2] = p[2];
-
-  const lv_coord_t PLOT_H = 112;
-  const lv_coord_t MIN_H = 2;
-
-  for (int i = 0; i < 3; i++) {
-    if (!g_rain_bar[i] || !g_rain_pct[i]) continue;
-
-    lv_coord_t h = (lv_coord_t)((p[i] * PLOT_H) / 100);
-    if (h < MIN_H) h = MIN_H;
-
-    lv_obj_set_height(g_rain_bar[i], h);
-
-    char buf[8];
-    snprintf(buf, sizeof(buf), "%d%%", p[i]);
-    lv_label_set_text(g_rain_pct[i], buf);
-  }
+static void set_label_float_1(lv_obj_t* lbl, float v) {
+  if(!lbl) return;
+  char buf[16];
+  // One decimal
+  // NOTE: snprintf is fine here; if you want faster, write your own formatter.
+  snprintf(buf, sizeof(buf), "%.1f", v);
+  lv_label_set_text(lbl, buf);
 }
 
+static void set_label_u16(lv_obj_t* lbl, uint16_t v, const char* suffix) {
+  if(!lbl) return;
+  char buf[24];
+  if(suffix) snprintf(buf, sizeof(buf), "%u%s", (unsigned)v, suffix);
+  else       snprintf(buf, sizeof(buf), "%u", (unsigned)v);
+  lv_label_set_text(lbl, buf);
+}
+
+void page1_update(const ui_state_t* s) {
+  if(!s) return;
+
+  // WIND
+  if(s->dirty.wind) {
+    if(g_lbl_wind_dir) lv_label_set_text(g_lbl_wind_dir, s->wind_dir_txt);
+    set_label_float_1(g_lbl_wind_speed, s->wind_ms);
+    // TODO later: rotate arrow based on wind_deg if you want
+  }
+
+  // RAIN
+  if(s->dirty.rain) {
+    for(int i=0;i<3;i++) {
+      if(g_lbl_rain_pct[i]) {
+        char buf[8];
+        snprintf(buf, sizeof(buf), "%u%%", (unsigned)s->rain_pct[i]);
+        lv_label_set_text(g_lbl_rain_pct[i], buf);
+      }
+      // TODO later: update bar height based on % (you already have objects)
+    }
+  }
+
+  // TEMPS
+  if(s->dirty.temps) {
+    set_label_float_1(g_lbl_temp_out, s->temp_out_c);
+    set_label_float_1(g_lbl_feels, s->feels_like_c);
+    // Units are static "°C" so no need to update unless you want localization
+  }
+
+  // ATMOSPHERE (optional if you have labels)
+  if(s->dirty.atmosphere) {
+    // TODO: if you later store pointers for pressure/humidity labels, update here.
+  }
+
+  // WX ICON
+  if(s->dirty.wx_icon) {
+    ui_set_weather_icon(s->wx_symbol);
+  }
+
+  // UPDATED (optional if you have "Uppdaterat: X min")
+  if(s->dirty.updated) {
+    // TODO: update updated label if you store it
+  }
+
+  // Clear dirty after applying
+  // NOTE: call ui_state_clear_dirty(&state) in the owner (not here) if you prefer.
+}
 

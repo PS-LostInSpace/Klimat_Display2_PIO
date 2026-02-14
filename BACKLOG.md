@@ -9,13 +9,22 @@ för projektet Klimat_Display2_PIO.
 ---
 
 ## 🟢 Nästa steg (prioriterat)
-- [ ] **Steg 8: Sidstruktur (multi-page foundation, utan paging/knappar)**
-      - Skapa `PageManager`-struktur (create/show/hide)
-      - Bryt ut Page 1 till egen modul: `page1_build(parent)` + `page1_update(state)`
-      - Skapa Page 2 stub: `page2_build(parent)` (tom layout + label “Page 2 (stub)”)
-      - Skapa gemensam `ui_state_t` (dummy-data nu) för framtida MQTT/API
-      - Standardisera UI-konstanter (marginaler, Y_SECTION_DIV, etc.)
-      - Inför “dirty flags” per sektion (för framtida e-ink update-policy)
+- [ ] **Steg 9: Data-pipeline till Page 1 (state → MQTT → UI)**
+      - Införa gemensam `ui_state_t` för vind, temp, regn, atmosfär, ikon och updated-tid
+      - Implementera `page1_update(state)` som uppdaterar LVGL-objekt via dirty-flags
+      - Skapa MQTT→UI-bridge som:
+            - tar emot JSON-payload
+            - mappar till `ui_state_t`
+            - triggar `page1_update()` + e-ink refresh
+      - Införa ikon-switch (`ui_set_weather_icon(symbol)`) med fallback-ikon
+      - Verifiera uppdateringsloop utan Home Assistant (dummy JSON först)
+      - Säkerställa modulär struktur återanvändbar i KD1/KD3
+
+- [ ] **Förberedelse Steg 10: Home Assistant-integration**
+      - Definiera MQTT-topicstruktur (`kd2/page1/state`, ev. page2 senare)
+      - Skapa HA-automation som publicerar kompakt JSON till displayen
+      - Verifiera stabil lokal uppdatering utan extern exponering av HA
+
 
 ---
 

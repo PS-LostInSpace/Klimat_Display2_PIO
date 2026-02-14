@@ -1,36 +1,49 @@
 #include "ui_state.h"
+#include <string.h>
 
-static ui_state_t g_state;
-static bool g_dirty = true; // true at boot to force first render
+void ui_state_init(ui_state_t* s) {
+  if(!s) return;
+  memset(s, 0, sizeof(*s));
 
-const ui_state_t* ui_state_get(void) {
-  return &g_state;
+  // Sensible defaults for "proof-of-life"
+  strcpy(s->wind_dir_txt, "N");
+  s->wind_ms = 0.0f;
+  s->wind_deg = -1;
+
+  s->rain_pct[0] = 0;
+  s->rain_pct[1] = 0;
+  s->rain_pct[2] = 0;
+
+  s->temp_out_c = 0.0f;
+  s->feels_like_c = 0.0f;
+
+  s->pressure_mbar = 1013.2f;
+  s->humidity_pct = 50;
+
+  strcpy(s->wx_symbol, "unknown");
+  s->updated_min_ago = 0;
+
+  ui_state_mark_all_dirty(s);
 }
 
-static int16_t clamp_i16(int v, int lo, int hi) {
-  if (v < lo) return (int16_t)lo;
-  if (v > hi) return (int16_t)hi;
-  return (int16_t)v;
+void ui_state_mark_all_dirty(ui_state_t* s) {
+  if(!s) return;
+  s->dirty.wind = true;
+  s->dirty.rain = true;
+  s->dirty.temps = true;
+  s->dirty.atmosphere = true;
+  s->dirty.wx_icon = true;
+  s->dirty.updated = true;
+  s->dirty.any = true;
 }
 
-void ui_state_set_rain(int p30, int p60, int p90) {
-  int16_t np30 = clamp_i16(p30, 0, 100);
-  int16_t np60 = clamp_i16(p60, 0, 100);
-  int16_t np90 = clamp_i16(p90, 0, 100);
-
-  // Only mark dirty if something actually changed
-  if (g_state.rain_p30 != np30 || g_state.rain_p60 != np60 || g_state.rain_p90 != np90) {
-    g_state.rain_p30 = np30;
-    g_state.rain_p60 = np60;
-    g_state.rain_p90 = np90;
-    g_dirty = true;
-  }
-}
-
-bool ui_state_is_dirty(void) {
-  return g_dirty;
-}
-
-void ui_state_clear_dirty(void) {
-  g_dirty = false;
+void ui_state_clear_dirty(ui_state_t* s) {
+  if(!s) return;
+  s->dirty.wind = false;
+  s->dirty.rain = false;
+  s->dirty.temps = false;
+  s->dirty.atmosphere = false;
+  s->dirty.wx_icon = false;
+  s->dirty.updated = false;
+  s->dirty.any = false;
 }
