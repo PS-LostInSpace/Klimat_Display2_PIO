@@ -371,6 +371,10 @@ void page1_build(lv_obj_t* parent) {
 
 static void set_label_float_1(lv_obj_t* lbl, float v) {
   if(!lbl) return;
+  if(isnan(v)) {
+    lv_label_set_text(lbl, "--");
+    return;
+  }
   char buf[16];
   // One decimal
   // NOTE: snprintf is fine here; if you want faster, write your own formatter.
@@ -399,11 +403,18 @@ void page1_update(const ui_state_t* s) {
   if(s->dirty.rain) {
     for(int i=0;i<3;i++) {
       if(g_lbl_rain_pct[i]) {
-        char buf[8];
-        snprintf(buf, sizeof(buf), "%u%%", (unsigned)s->rain_pct[i]);
-        lv_label_set_text(g_lbl_rain_pct[i], buf);
+        if(s->rain_pct[i] > 100) {
+          lv_label_set_text(g_lbl_rain_pct[i], "--");
+        } else {
+          char buf[8];
+          snprintf(buf, sizeof(buf), "%u%%", (unsigned)s->rain_pct[i]);
+          lv_label_set_text(g_lbl_rain_pct[i], buf);
+        }
       }
-      if(g_rain_bar[i]) set_rain_bar_from_pct(g_rain_bar[i], s->rain_pct[i]);
+      if(g_rain_bar[i]) {
+        const uint8_t rain_pct = (s->rain_pct[i] > 100) ? 0 : s->rain_pct[i];
+        set_rain_bar_from_pct(g_rain_bar[i], rain_pct);
+      }
     }
   }
 
@@ -416,14 +427,22 @@ void page1_update(const ui_state_t* s) {
   // ATM
   if(s->dirty.atmosphere) {
     if(g_lbl_atm_pressure) {
-      char buf[32];
-      snprintf(buf, sizeof(buf), "Tryck: %.1f mbar", s->pressure_mbar);
-      lv_label_set_text(g_lbl_atm_pressure, buf);
+      if(isnan(s->pressure_mbar)) {
+        lv_label_set_text(g_lbl_atm_pressure, "Tryck: --.- mbar");
+      } else {
+        char buf[32];
+        snprintf(buf, sizeof(buf), "Tryck: %.1f mbar", s->pressure_mbar);
+        lv_label_set_text(g_lbl_atm_pressure, buf);
+      }
     }
     if(g_lbl_atm_humidity) {
-      char buf[24];
-      snprintf(buf, sizeof(buf), "Fukt:  %u %%", (unsigned)s->humidity_pct);
-      lv_label_set_text(g_lbl_atm_humidity, buf);
+      if(s->humidity_pct > 100) {
+        lv_label_set_text(g_lbl_atm_humidity, "Fukt:  -- %");
+      } else {
+        char buf[24];
+        snprintf(buf, sizeof(buf), "Fukt:  %u %%", (unsigned)s->humidity_pct);
+        lv_label_set_text(g_lbl_atm_humidity, buf);
+      }
     }
   }
 
@@ -440,9 +459,13 @@ void page1_update(const ui_state_t* s) {
   // UPDATED
   if(s->dirty.updated) {
     if(g_lbl_updated) {
-      char buf[48];
-      format_updated(buf, sizeof(buf), s->updated_min_ago);
-      lv_label_set_text(g_lbl_updated, buf);
+      if(s->updated_min_ago == UINT16_MAX) {
+        lv_label_set_text(g_lbl_updated, "Uppdaterat: --");
+      } else {
+        char buf[48];
+        format_updated(buf, sizeof(buf), s->updated_min_ago);
+        lv_label_set_text(g_lbl_updated, buf);
+      }
     }
   }
 }

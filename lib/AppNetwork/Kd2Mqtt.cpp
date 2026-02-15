@@ -83,8 +83,8 @@ static void reconnect_mqtt() {
 
     Serial.println("[MQTT] connected");
 
-    client.subscribe(kTopicPage1);
-    Serial.printf("[MQTT] subscribed: %s\n", kTopicPage1);
+    bool sub_ok = client.subscribe(kTopicPage1);
+    Serial.printf("[MQTT] subscribed: %s (%s)\n", kTopicPage1, sub_ok ? "ok" : "failed");
     return;
   }
 
@@ -98,6 +98,9 @@ static void reconnect_mqtt() {
 
 void kd2_mqtt_begin() {
   ensure_wifi();
+  const uint16_t mqtt_buf_size = 1024;
+  bool buf_ok = client.setBufferSize(mqtt_buf_size);
+  Serial.printf("[MQTT] setBufferSize(%u): %s\n", (unsigned)mqtt_buf_size, buf_ok ? "ok" : "failed");
 #if defined(SECRET_MQTT_HOST) && defined(SECRET_MQTT_PORT)
   client.setServer(SECRET_MQTT_HOST, SECRET_MQTT_PORT);
 #else

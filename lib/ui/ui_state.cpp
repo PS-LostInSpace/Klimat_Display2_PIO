@@ -1,28 +1,29 @@
 #include "ui_state.h"
 #include <string.h>
+#include <math.h>
 
 void ui_state_init(ui_state_t* s) {
   if(!s) return;
   memset(s, 0, sizeof(*s));
 
   // Sensible defaults for "proof-of-life"
-  strcpy(s->wind_dir_txt, "N");
-  s->wind_ms = 0.0f;
+  strcpy(s->wind_dir_txt, "--");
+  s->wind_ms = NAN;
   s->wind_deg = -1;
 
-  s->rain_pct[0] = 0;
-  s->rain_pct[1] = 0;
-  s->rain_pct[2] = 0;
+  s->rain_pct[0] = 255;
+  s->rain_pct[1] = 255;
+  s->rain_pct[2] = 255;
 
-  s->temp_out_c = 0.0f;
-  s->feels_like_c = 0.0f;
+  s->temp_out_c = NAN;
+  s->feels_like_c = NAN;
 
-  s->pressure_mbar = 1013.2f;
-  s->humidity_pct = 50;
+  s->pressure_mbar = NAN;
+  s->humidity_pct = 255;
 
   strcpy(s->wx_symbol, "unknown");
   strcpy(s->forecast_txt, "--\n--");
-  s->updated_min_ago = 0;
+  s->updated_min_ago = UINT16_MAX;
 
   ui_state_mark_all_dirty(s);
 }
