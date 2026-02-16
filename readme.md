@@ -49,7 +49,6 @@ Monochrome 7.5" 800x480 display using LVGL and MQTT.
 
 \## Git
 Before startig to code
-
 git checkout develop
 git fetch --all --prune
 git pull --ff-only
@@ -57,5 +56,21 @@ git pull --ff-only
 git checkout -b feature/<namn>
 
 
+When done coding
+git checkout develop 
+git merge feature/page1-dummy-json 
+push
+
+Delete locally
+git branch -d feature/<namn>
+
+Delete GitHub
+git push origin --delete feature/<namn>
+
+Check Branches
+git branch
+
+Check Branches GitBub
+git branch -r
 
 
