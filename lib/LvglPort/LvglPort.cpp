@@ -146,47 +146,47 @@ g_eink_refresh = EinkRefresh::Normal;
 
 void lvgl_port_loop() {
   // ---------------------------------------------------------------------------
-  // 1) Run LVGL timers/animations + page manager
+  // 0) Time-based state updates (NO direct UI update here)
   // ---------------------------------------------------------------------------
-  lv_timer_handler();
-  pagemgr_update();
-
   static uint32_t last_minute = 0;
-  if(millis() - last_minute >= 60000) {
+  if (millis() - last_minute >= 60000) {
     last_minute = millis();
+    // This should mark the relevant dirty flag(s) inside ui_state_set_updated()
     ui_state_set_updated(&g_state, g_state.updated_min_ago + 1);
-    page1_update(&g_state);
-    ui_state_clear_dirty(&g_state);
-    g_eink_refresh = EinkRefresh::Normal;
   }
 
-  delay(5);
+  // ---------------------------------------------------------------------------
+  // 1) Apply new UI data (JSON -> state) (NO direct UI update here)
+  // ---------------------------------------------------------------------------
+  if (g_has_mqtt_ui_msg) {
+    g_has_mqtt_ui_msg = false;
+    (void)kd2_ui_apply_mqtt_json(&g_state, g_ui_json_buf, g_ui_json_len);
+    // IMPORTANT: Do NOT call page1_update() here.
+    // PageManager will pick up g_state.dirty.any and update once.
+  }
 
+  // Optional: demo JSON injection (kept as-is)
 #if KD2_USE_DUMMY_JSON
   static bool once = false;
-  if(!once) {
+  if (!once) {
     once = true;
     lvgl_port_on_ui_json(kd2_dummy_json(), kd2_dummy_json_len());
   }
 #endif
 
   // ---------------------------------------------------------------------------
-  // 2) Apply new UI data (JSON handoff) -> request a normal refresh
+  // 2) Update UI exactly once via PageManager if anything is dirty
   // ---------------------------------------------------------------------------
-  if (g_has_mqtt_ui_msg) {
-    g_has_mqtt_ui_msg = false;
-
-    if (kd2_ui_apply_mqtt_json(&g_state, g_ui_json_buf, g_ui_json_len)) {
-      page1_update(&g_state);
-      ui_state_clear_dirty(&g_state);
-
-      // New data arrived -> request refresh
-      g_eink_refresh = EinkRefresh::Normal;
-    }
-  }
+  pagemgr_update();
 
   // ---------------------------------------------------------------------------
-  // 3) E-Ink refresh policy: upgrade Normal -> Full sometimes
+  // 3) Let LVGL process timers/flush after we've updated labels/objects
+  // ---------------------------------------------------------------------------
+  lv_timer_handler();
+  delay(5);
+
+  // ---------------------------------------------------------------------------
+  // 4) E-Ink refresh policy: upgrade Normal -> Full sometimes
   // ---------------------------------------------------------------------------
   static uint32_t last_full_ms = 0;
   static uint16_t updates_since_full = 0;
@@ -194,7 +194,8 @@ void lvgl_port_loop() {
   if (g_eink_refresh == EinkRefresh::Normal) {
     const uint32_t now = millis();
 
-    const bool time_due  = (last_full_ms == 0) || (now - last_full_ms >= EINK_FULL_REFRESH_MS);
+    const bool time_due =
+        (last_full_ms == 0) || (now - last_full_ms >= EINK_FULL_REFRESH_MS);
     const bool count_due = (updates_since_full >= EINK_FULL_REFRESH_AFTER_N_UPDATES);
 
     if (time_due || count_due) {
@@ -203,11 +204,9 @@ void lvgl_port_loop() {
   }
 
   // ---------------------------------------------------------------------------
-  // 4) Perform refresh when requested
+  // 5) Perform refresh when requested
   // ---------------------------------------------------------------------------
   if (g_eink_refresh != EinkRefresh::None) {
-    // NOTE: With current Seeed_GFX driver, update() is a full-panel refresh anyway.
-    // Later we can map Normal->partial and Full->full.
     epaper.update();
 
     if (g_eink_refresh == EinkRefresh::Full) {

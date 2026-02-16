@@ -74,3 +74,13 @@ Check Branches GitBub
 git branch -r
 
 
+## OTA script
+Build + upload via ElegantOTA Lite:
+
+./scripts/ota-upload.ps1
+
+Skip build and upload latest compiled firmware only:
+
+./scripts/ota-upload.ps1 -SkipBuild
+
+
