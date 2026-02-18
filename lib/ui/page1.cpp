@@ -552,6 +552,8 @@ void page1_update(const ui_state_t* s) {
     if(g_lbl_updated) {
       if(s->updated_min_ago == UINT16_MAX) {
         lv_label_set_text(g_lbl_updated, "Uppdaterat: --");
+      } else if(s->updated_min_ago == 0) {
+        lv_label_set_text(g_lbl_updated, "Uppdaterat: nyss");
       } else {
         char buf[48];
         format_updated(buf, sizeof(buf), s->updated_min_ago);

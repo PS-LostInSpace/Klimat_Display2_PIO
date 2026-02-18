@@ -149,10 +149,21 @@ void lvgl_port_loop() {
   // 0) Time-based state updates (NO direct UI update here)
   // ---------------------------------------------------------------------------
   static uint32_t last_minute = 0;
-  if (millis() - last_minute >= 60000) {
-    last_minute = millis();
-    // This should mark the relevant dirty flag(s) inside ui_state_set_updated()
-    ui_state_set_updated(&g_state, g_state.updated_min_ago + 1);
+  const uint32_t now = millis();
+  if (now - last_minute >= 60000) {
+    last_minute = now;
+    const uint32_t last_mqtt_rx_ms = kd2_ui_last_mqtt_rx_ms();
+    if (last_mqtt_rx_ms != 0) {
+      const uint32_t age_ms = now - last_mqtt_rx_ms;
+      const bool fresh = age_ms < (6UL * 60UL * 1000UL);
+      if (fresh) {
+        ui_state_set_updated(&g_state, 0);
+      } else {
+        ui_state_set_updated(&g_state, UINT16_MAX);
+      }
+    } else {
+      ui_state_set_updated(&g_state, UINT16_MAX);
+    }
   }
 
   // ---------------------------------------------------------------------------

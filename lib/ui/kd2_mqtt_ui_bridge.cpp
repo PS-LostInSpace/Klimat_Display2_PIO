@@ -1,6 +1,14 @@
 #include "kd2_mqtt_ui_bridge.h"
 #include "ui_state.h"
+#include <Arduino.h>
 #include <ArduinoJson.h>
+
+static uint32_t g_last_mqtt_rx_ms = 0;
+
+uint32_t kd2_ui_last_mqtt_rx_ms(void)
+{
+    return g_last_mqtt_rx_ms;
+}
 
 bool kd2_ui_apply_mqtt_json(ui_state_t* s, const char* json, size_t len)
 {
@@ -13,6 +21,9 @@ bool kd2_ui_apply_mqtt_json(ui_state_t* s, const char* json, size_t len)
         Serial.println(err.c_str());
         return false;
     }
+
+    g_last_mqtt_rx_ms = millis();
+    ui_state_set_updated(s, 0);
 
     // WIND (preferred nested format)
     if (doc["wind"].is<JsonObject>()) {
@@ -57,12 +68,6 @@ bool kd2_ui_apply_mqtt_json(ui_state_t* s, const char* json, size_t len)
         applied_any = true;
     } else if (!doc["pressure"].isNull() || !doc["rh"].isNull() || !doc["humidity"].isNull()) {
         ui_state_set_atm(s, doc["pressure"] | 0.0f, doc["rh"] | (doc["humidity"] | 0));
-        applied_any = true;
-    }
-
-    // Updated (minutes ago)
-    if (!doc["updated_min"].isNull()) {
-        ui_state_set_updated(s, doc["updated_min"] | 0);
         applied_any = true;
     }
 
