@@ -9,22 +9,27 @@ för projektet Klimat_Display2_PIO.
 ---
 
 ## 🟢 Nästa steg (prioriterat)
-- [ ] **Steg 9: Data-pipeline till Page 1 (state → MQTT → UI)**
-      - Införa gemensam `ui_state_t` för vind, temp, regn, atmosfär, ikon och updated-tid
-      - Implementera `page1_update(state)` som uppdaterar LVGL-objekt via dirty-flags
-      - Skapa MQTT→UI-bridge som:
-            - tar emot JSON-payload
-            - mappar till `ui_state_t`
-            - triggar `page1_update()` + e-ink refresh
-      - Införa ikon-switch (`ui_set_weather_icon(symbol)`) med fallback-ikon
-      - Verifiera uppdateringsloop utan Home Assistant (dummy JSON först)
-      - Säkerställa modulär struktur återanvändbar i KD1/KD3
+- [ ] **Steg 11: Väderikonsystem (NY PRIORITET)**
+      - Definiera ikonlista (minst): `sun`, `clear-night`, `partly`, `cloud`, `rain`, `sleet`, `snow`, `fog`, `wind`, `unknown`
+      - Bestäm grafisk stil (outline optimerad för e-ink)
+      - Skapa SVG → konvertera till LVGL C-array
+      - Införa gemensam ikon-enum
+      - Implementera symbol→image switch
+      - Säker fallback (`unknown` om saknas)
+      - Verifiera minnespåverkan (flash/ram)
+      - Testa mörk/ljus kontrast på e-ink
 
-- [ ] **Förberedelse Steg 10: Home Assistant-integration**
-      - Definiera MQTT-topicstruktur (`kd2/page1/state`, ev. page2 senare)
-      - Skapa HA-automation som publicerar kompakt JSON till displayen
-      - Verifiera stabil lokal uppdatering utan extern exponering av HA
+- [ ] **Steg 12: Stabilisering & tuning**
+      - Välj riskmodell för rain
+      - Ta bort `updated_min` helt
+      - Säkerställa att `icon` aldrig är null
+      - Eventuell trigger-reducering i HA
 
+- [ ] **Steg 13: Page2 (Indoor climate)**
+      - Design layout
+      - Ny state-struct del
+      - MQTT topic: `home/display/kd2/page2/state`
+      - Navigation mellan sidor
 
 ---
 
@@ -63,6 +68,33 @@ för projektet Klimat_Display2_PIO.
 ---
 
 ## ✅ Avklarat
+
+### Steg 10 (Page1): Home Assistant integration – klart
+- Met.no + Nowcast integrerat
+- DNS-problem löst
+- Normaliserad data-pipeline i HA:
+      - `home/weather/observed`
+      - `home/weather/forecast_short`
+      - `home/weather/nowcast` (A/B/C riskmodeller)
+      - `home/indoor/rooms`
+- Display-view: `home/display/kd2/page1/state` (`retain=true`)
+- Liveness-baserad uppdatering:
+      - `<6 min` → "Uppdaterat: nyss"
+      - `≥6 min` → "Uppdaterat: --"
+- Forecast 1–3h implementerad
+- Nowcast A/B/C riskmodeller implementerade
+- Rain 30/60/90 stabila
+- Status: Produktionstest pågår (utvärdering av riskmodell)
+
+### Steg 9: Data-pipeline (state → MQTT → UI) – klart
+- Gemensam `ui_state_t` införd
+- Dirty-flags per fält
+- `page1_update(state)` uppdaterar endast ändrade objekt
+- MQTT → JSON → `ui_state_t` bridge
+- E-ink refresh endast vid faktisk state-ändring
+- Robust mot saknade fält
+- Modulär struktur (återanvändbar för KD1/KD3)
+- Bevis: Stabil drift, korrekt uppdatering, inga blink vid identisk payload
 
 ### Steg 8: UI-polish + fonter + ikon – klart
 - Bytt från Montserrat till NotoSans (svenska tecken ÅÄÖ fungerar)

@@ -222,6 +222,7 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_t* sep2      = create_box(parent, 1,       H, false);
     lv_obj_t* col_right = create_box(parent, W_RIGHT, H, false);
 
+    lv_obj_add_flag(col_left, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
     lv_obj_clear_flag(col_mid, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(col_mid, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
 
@@ -319,6 +320,10 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_align(lbl_forecast, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_TITLE);
 
     g_lbl_forecast_txt = create_label(col_left, "");
+    ui_set_font(g_lbl_forecast_txt, UI_FONT_BODY);
+    lv_label_set_long_mode(g_lbl_forecast_txt, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(g_lbl_forecast_txt, W_LEFT - 28);
+    lv_obj_set_height(g_lbl_forecast_txt, 124);
     lv_obj_align(g_lbl_forecast_txt, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_CONTENT);
 
 
