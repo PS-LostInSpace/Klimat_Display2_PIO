@@ -1,42 +1,70 @@
 #include "ui_icons.h"
 #include <string.h>
+#include <ctype.h>
 
-// Your generated LVGL image
-#include "img/wx_sun_cloud_rain_128.h"
+#include "img/ui_weather_assets.h"
 
-// Keep it simple for now: one dummy + fallback.
-// Later: expand mapping (MET/YR symbol_code -> icon pointer).
 static lv_obj_t* s_weather_img = NULL;
 
 void ui_icons_attach_weather_img(lv_obj_t* img_obj) {
   s_weather_img = img_obj;
+  if(s_weather_img) {
+    lv_obj_clear_flag(s_weather_img, LV_OBJ_FLAG_HIDDEN);
+    lv_img_set_src(s_weather_img, &kd_weather_unknown_128);
+  }
 }
 
-static void set_img_src(const void* src) {
-  if(!s_weather_img) return;
-  lv_img_set_src(s_weather_img, src);
+static bool icontains(const char* haystack, const char* needle) {
+  if(!haystack || !needle) return false;
+
+  const size_t nlen = strlen(needle);
+  for(const char* p = haystack; *p; p++) {
+    size_t i = 0;
+    while(p[i] && i < nlen) {
+      const char a = (char)tolower((unsigned char)p[i]);
+      const char b = (char)tolower((unsigned char)needle[i]);
+      if(a != b) break;
+      i++;
+    }
+    if(i == nlen) return true;
+  }
+  return false;
+}
+
+static const lv_img_dsc_t* map_symbol_to_icon_128(const char* s) {
+  if(!s || !*s) return &kd_weather_unknown_128;
+
+  if(icontains(s, "unknown") || icontains(s, "null") || icontains(s, "none")) {
+    return &kd_weather_unknown_128;
+  }
+
+  if(icontains(s, "clear-night") || icontains(s, "_night") || icontains(s, "night")) {
+    return &kd_weather_clear_night_128;
+  }
+
+  if(icontains(s, "fog")) return &kd_weather_fog_128;
+  if(icontains(s, "wind")) return &kd_weather_wind_128;
+
+  if(icontains(s, "sleet") || icontains(s, "snowy-rainy")) return &kd_weather_sleet_128;
+  if(icontains(s, "snow")) return &kd_weather_snow_128;
+
+  if(icontains(s, "rain") || icontains(s, "pour") || icontains(s, "showers") || icontains(s, "hail") || icontains(s, "lightning-rainy")) {
+    return &kd_weather_rain_128;
+  }
+
+  if(icontains(s, "partly") || icontains(s, "fair")) return &kd_weather_partly_128;
+  if(icontains(s, "cloud")) return &kd_weather_cloud_128;
+
+  if(icontains(s, "clearsky") || icontains(s, "sunny") || icontains(s, "clear-day")) {
+    return &kd_weather_sun_128;
+  }
+
+  return &kd_weather_unknown_128;
 }
 
 void ui_set_weather_icon(const char* symbol) {
   if(!s_weather_img) return;
 
-  // Fallback always works
-  if(symbol == NULL || symbol[0] == '\0') {
-    set_img_src(&wx_sun_cloud_rain_128);
-    return;
-  }
-
-  // Dummy mapping examples (extend later)
-  // NOTE: keep comparisons cheap; avoid std::string on embedded.
-  if(strcmp(symbol, "rain") == 0) {
-    set_img_src(&wx_sun_cloud_rain_128);
-    return;
-  }
-  if(strcmp(symbol, "clearsky_day") == 0) {
-    set_img_src(&wx_sun_cloud_rain_128); // TODO: replace with a sun icon
-    return;
-  }
-
-  // Unknown -> fallback
-  set_img_src(&wx_sun_cloud_rain_128);
+  const lv_img_dsc_t* img = map_symbol_to_icon_128(symbol);
+  lv_img_set_src(s_weather_img, img);
 }

@@ -6,23 +6,19 @@ from pathlib import Path
 from PIL import Image
 
 PALETTE_ARGB8888 = [
-    0xFFFFFFFF,  # white
-    0xFFAAAAAA,  # light gray
-    0xFF555555,  # dark gray
-    0xFF000000,  # black
+    0x00FFFFFF,  # index 0 = transparent
+    0xFFAAAAAA,
+    0xFF555555,
+    0xFF000000,
 ]
 
 def luminance(r, g, b):
     return int(0.2126*r + 0.7152*g + 0.0722*b)
 
 def to_idx(r, g, b, a):
-    if a < 128:
-        return 0
-    y = luminance(r, g, b)
-    if y > 210: return 0
-    if y > 140: return 1
-    if y > 70:  return 2
-    return 3
+    if a < 16:
+        return 0  # transparent background
+    return 3      # force black for any visible pixel
 
 def pack(indices, w, h):
     out = bytearray()

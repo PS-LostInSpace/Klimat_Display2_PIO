@@ -315,7 +315,7 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_set_style_bg_color(line, lv_color_black(), 0);
     lv_obj_align(line, LV_ALIGN_TOP_LEFT, 0, Y_SECTION_DIV);
 
-    lv_obj_t* lbl_forecast = create_label(col_left, "PROGNOS 1-2 h");
+    lv_obj_t* lbl_forecast = create_label(col_left, "PROGNOS VIND");
     ui_set_font(lbl_forecast, UI_FONT_SUBTITLE);
     lv_obj_align(lbl_forecast, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_TITLE);
 
