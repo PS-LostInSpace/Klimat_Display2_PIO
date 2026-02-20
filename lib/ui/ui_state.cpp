@@ -131,8 +131,16 @@ void ui_state_set_icon(ui_state_t* s, const char* symbol) {
 void ui_state_set_forecast(ui_state_t* s, const char* txt) {
   if(!s) return;
   if(!txt) txt = "";
-  if(strncmp(s->forecast_txt, txt, sizeof(s->forecast_txt)) != 0) {
-    strncpy(s->forecast_txt, txt, sizeof(s->forecast_txt)-1);
+  char normalized[sizeof(s->forecast_txt)];
+  size_t w = 0;
+  for(size_t i = 0; txt[i] != '\0' && w < sizeof(normalized) - 1; ++i) {
+    if(txt[i] == '\r') continue;
+    normalized[w++] = txt[i];
+  }
+  normalized[w] = '\0';
+
+  if(strncmp(s->forecast_txt, normalized, sizeof(s->forecast_txt)) != 0) {
+    strncpy(s->forecast_txt, normalized, sizeof(s->forecast_txt)-1);
     s->forecast_txt[sizeof(s->forecast_txt)-1] = '\0';
     s->dirty.forecast = true;
     s->dirty.any = true;

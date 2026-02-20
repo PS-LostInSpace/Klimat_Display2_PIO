@@ -1,6 +1,7 @@
 #include "page1.h"
 #include "fonts/kd2_fonts.h"
 #include <cstdio>   // snprintf
+#include <stdint.h>
 #include <math.h>
 #include "ui_icons.h"
 
@@ -15,6 +16,9 @@ static lv_obj_t* g_wx_img = nullptr;
 
 static lv_obj_t* g_lbl_wind_dir = nullptr;
 static lv_obj_t* g_lbl_wind_speed = nullptr;
+static lv_obj_t* g_wind_arrow = nullptr;
+static lv_obj_t* g_compass = nullptr;
+static int16_t   g_wind_arrow_deg = 315;
 
 static lv_obj_t* g_lbl_rain_pct[3] = {nullptr,nullptr,nullptr};
 
@@ -45,22 +49,46 @@ static int clamp_int(int v, int lo, int hi) {
     return v;
 }
 
-static void set_rain_bar_from_pct(lv_obj_t* bar, uint8_t pct) {
+static int rain_bar_index(lv_obj_t* bar)
+{
+  for(int i = 0; i < 3; i++) if(g_rain_bar[i] == bar) return i;
+  return -1;
+}
+
+static void set_rain_bar_from_pct(lv_obj_t* bar, uint8_t pct)
+{
   if(!bar) return;
 
-  // Total drawable height inside the column (tune if needed)
-  // If your BARS_H is 190, keep some headroom for labels.
-  const int bar_max_h = 140;  // adjust if you want taller bars
+  const int idx = rain_bar_index(bar);
+  if(idx < 0 || !g_lbl_rain_pct[idx]) return;
+
+  lv_obj_t* col = lv_obj_get_parent(bar);
+  if(!col) return;
+
+  // 1) Se till att labelns nya text är layoutad innan vi mäter
+  lv_obj_update_layout(col);
+  lv_obj_update_layout(g_lbl_rain_pct[idx]);
+
+  // 2) Align barens baseline först så vi vet exakt var bottom hamnar
+  lv_obj_align(bar, LV_ALIGN_BOTTOM_MID, 0, Y_RAIN_BAR_BASE_Y);
+  lv_obj_update_layout(bar);
+
+  // 3) Mät i absoluta coords (ingen lokal/negativ-y strul)
+  lv_area_t bar_a, lbl_a;
+  lv_obj_get_coords(bar, &bar_a);
+  lv_obj_get_coords(g_lbl_rain_pct[idx], &lbl_a);
+
+  const lv_coord_t base_abs_y = bar_a.y2;      // barens bottom (abs)
+  const lv_coord_t top_abs_y  = lbl_a.y2 + 6;  // 6 px under labelns bottom
+
+  lv_coord_t max_h = base_abs_y - top_abs_y;
+  if(max_h < 2) max_h = 2;
 
   int p = clamp_int((int)pct, 0, 100);
-
-  // Height in pixels: 0% => 2px (still visible), 100% => bar_max_h
-  int h = (p * bar_max_h) / 100;
+  lv_coord_t h = (lv_coord_t)((p * (int)max_h) / 100);
   if(h < 2) h = 2;
 
   lv_obj_set_height(bar, h);
-
-  // Keep same baseline (your existing constant)
   lv_obj_align(bar, LV_ALIGN_BOTTOM_MID, 0, Y_RAIN_BAR_BASE_Y);
 }
 
@@ -96,27 +124,66 @@ static lv_obj_t* create_label(lv_obj_t* parent, const char* txt) {
     return l;
 }
 
-static void set_wind_arrow(lv_obj_t* line_head,
-                           lv_coord_t size,
-                           int16_t deg_from_north) {
-    const float deg2rad = 3.1415926f / 180.0f;
-    const float a = deg_from_north * deg2rad;
-    const float cx = size / 2.0f;
-    const float cy = size / 2.0f;
-    const float r = (size / 2.0f) - 6.0f;
-    const float tip_inset = 5.0f;
-    const float base_outset = 16.0f;
-    const float head_ang = 7.0f * deg2rad;
+static void wind_arrow_event_cb(lv_event_t* e)
+{
+  if(lv_event_get_code(e) != LV_EVENT_DRAW_MAIN) return;
 
-    static lv_point_t head_pts[4];
-    head_pts[0] = {(lv_coord_t)(cx + (r - tip_inset) * sinf(a)),
-                   (lv_coord_t)(cy - (r - tip_inset) * cosf(a))};
-    head_pts[1] = {(lv_coord_t)(cx + (r + base_outset) * sinf(a + head_ang)),
-                   (lv_coord_t)(cy - (r + base_outset) * cosf(a + head_ang))};
-    head_pts[2] = {(lv_coord_t)(cx + (r + base_outset) * sinf(a - head_ang)),
-                   (lv_coord_t)(cy - (r + base_outset) * cosf(a - head_ang))};
-    head_pts[3] = head_pts[0];
-    lv_line_set_points(line_head, head_pts, 4);
+  lv_obj_t* obj = lv_event_get_target(e);
+  lv_draw_ctx_t* draw_ctx = lv_event_get_draw_ctx(e);
+  if(!obj || !draw_ctx) return;
+
+  lv_area_t a;
+  lv_obj_get_coords(obj, &a);
+
+  const float cx = (a.x1 + a.x2) * 0.5f;
+  const float cy = (a.y1 + a.y2) * 0.5f;
+
+  float r_ring = 88.0f; // fallback
+  if(g_compass) {
+    lv_area_t ca;
+    lv_obj_get_coords(g_compass, &ca);
+    const float cs = (float)lv_area_get_width(&ca);
+    r_ring = (cs * 0.5f) - 2.0f;
+  }
+
+  const float deg2rad = 3.1415926f / 180.0f;
+  const float ang = (float)g_wind_arrow_deg * deg2rad;
+
+  const float tri_len = 30.0f;
+  const float half_w  = 11.0f;
+  const float base_out = 12.0f;
+
+  const float ax = cx + (r_ring + base_out) * sinf(ang);
+  const float ay = cy - (r_ring + base_out) * cosf(ang);
+
+  const float tx = cosf(ang);
+  const float ty = sinf(ang);
+  const float nx = -sinf(ang);
+  const float ny =  cosf(ang);
+
+  lv_point_t p0 = {
+    (lv_coord_t)(ax + tri_len * nx),
+    (lv_coord_t)(ay + tri_len * ny)
+  };
+
+  lv_point_t p1 = {
+    (lv_coord_t)(ax + half_w * tx),
+    (lv_coord_t)(ay + half_w * ty)
+  };
+
+  lv_point_t p2 = {
+    (lv_coord_t)(ax - half_w * tx),
+    (lv_coord_t)(ay - half_w * ty)
+  };
+
+  lv_draw_rect_dsc_t tri;
+  lv_draw_rect_dsc_init(&tri);
+  tri.bg_color = lv_color_black();
+  tri.bg_opa   = LV_OPA_COVER;
+  tri.border_width = 0;
+
+  lv_point_t tri_pts[3] = { p0, p1, p2 };
+  lv_draw_triangle(draw_ctx, &tri, tri_pts);
 }
 
 
@@ -155,6 +222,7 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_t* sep2      = create_box(parent, 1,       H, false);
     lv_obj_t* col_right = create_box(parent, W_RIGHT, H, false);
 
+    lv_obj_add_flag(col_left, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
     lv_obj_clear_flag(col_mid, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(col_mid, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
 
@@ -185,12 +253,7 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_set_style_border_width(compass, 2, 0);
     lv_obj_set_style_border_color(compass, lv_color_black(), 0);
     lv_obj_set_style_radius(compass, LV_RADIUS_CIRCLE, 0);
-
-    lv_obj_t* arrow_head = lv_line_create(compass);
-    lv_obj_set_style_line_width(arrow_head, 4, 0);
-    lv_obj_set_style_line_color(arrow_head, lv_color_black(), 0);
-
-    set_wind_arrow(arrow_head, 180, 315);
+    g_compass = compass;
 
     // Add cardinal directions N, O, S, V around the compass (like N at 0/360)
     lv_obj_t* lbl_n = create_label(compass_wrap, "N");
@@ -208,6 +271,22 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_t* lbl_v = create_label(compass_wrap, "V");
     ui_set_font(lbl_v, UI_FONT_SMALL);
     lv_obj_align_to(lbl_v, compass, LV_ALIGN_OUT_LEFT_MID, -10, 0);
+
+    // Fylld pil (ritas i draw-event) - skapa sist så den hamnar över labels
+    g_wind_arrow = lv_obj_create(compass_wrap);
+    lv_obj_set_size(g_wind_arrow, 270, 270);
+    lv_obj_center(g_wind_arrow);
+    lv_obj_set_style_bg_opa(g_wind_arrow, LV_OPA_0, 0);
+    lv_obj_set_style_border_width(g_wind_arrow, 0, 0);
+    lv_obj_clear_flag(g_wind_arrow, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_event_cb(g_wind_arrow, wind_arrow_event_cb, LV_EVENT_DRAW_MAIN, nullptr);
+
+    // initläge
+    g_wind_arrow_deg = 315;
+    lv_obj_invalidate(g_wind_arrow);
+
+    // Triangeln ska alltid ligga över N/O/S/V
+    lv_obj_move_foreground(g_wind_arrow);
 
     // Wind direction in center
     lv_obj_t* lbl_dir = create_label(compass, "VNV");
@@ -241,6 +320,10 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_align(lbl_forecast, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_TITLE);
 
     g_lbl_forecast_txt = create_label(col_left, "");
+    ui_set_font(g_lbl_forecast_txt, UI_FONT_BODY);
+    lv_label_set_long_mode(g_lbl_forecast_txt, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(g_lbl_forecast_txt, W_LEFT - 28);
+    lv_obj_set_height(g_lbl_forecast_txt, 124);
     lv_obj_align(g_lbl_forecast_txt, LV_ALIGN_TOP_LEFT, 0, Y_BELOW_CONTENT);
 
 
@@ -291,6 +374,7 @@ void page1_build(lv_obj_t* parent) {
         lv_obj_set_style_border_width(g_rain_bar[i], 0, 0);
         lv_obj_set_style_bg_opa(g_rain_bar[i], LV_OPA_100, 0);
         lv_obj_set_style_bg_color(g_rain_bar[i], lv_color_black(), 0);
+        lv_obj_set_user_data(g_rain_bar[i], (void*)(intptr_t)i);
         lv_obj_align(g_rain_bar[i], LV_ALIGN_BOTTOM_MID, 0, Y_RAIN_BAR_BASE_Y);
 
         lv_obj_t* t = create_label(g_rain_col[i], g_rain_t[i]);  // "30" "60" "90"
@@ -397,6 +481,18 @@ void page1_update(const ui_state_t* s) {
   if(s->dirty.wind) {
     if(g_lbl_wind_dir) lv_label_set_text(g_lbl_wind_dir, s->wind_dir_txt);
     set_label_float_1(g_lbl_wind_speed, s->wind_ms);
+
+    // Rotate wind arrow (deg)
+    if(g_wind_arrow) {
+      if(s->wind_deg >= 0) {
+        g_wind_arrow_deg = s->wind_deg;
+        lv_obj_clear_flag(g_wind_arrow, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_move_foreground(g_wind_arrow);
+        lv_obj_invalidate(g_wind_arrow);
+      } else {
+        lv_obj_add_flag(g_wind_arrow, LV_OBJ_FLAG_HIDDEN);
+      }
+    }
   }
 
   // RAIN
@@ -461,6 +557,8 @@ void page1_update(const ui_state_t* s) {
     if(g_lbl_updated) {
       if(s->updated_min_ago == UINT16_MAX) {
         lv_label_set_text(g_lbl_updated, "Uppdaterat: --");
+      } else if(s->updated_min_ago == 0) {
+        lv_label_set_text(g_lbl_updated, "Uppdaterat: nyss");
       } else {
         char buf[48];
         format_updated(buf, sizeof(buf), s->updated_min_ago);

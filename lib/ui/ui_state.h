@@ -27,8 +27,8 @@ typedef struct {
   // Weather symbol id (from HA/MET/etc)
   char wx_symbol[32];       // e.g. "clearsky_day" or "rain"
 
-  // Forecast text (left section, two lines)
-  char forecast_txt[64];
+  // Forecast text (left section, multi-line)
+  char forecast_txt[160];
 
   // UX
   uint16_t updated_min_ago; // e.g. 7
