@@ -84,3 +84,43 @@ Skip build and upload latest compiled firmware only:
 ./scripts/ota-upload.ps1 -SkipBuild
 
 
+## UI-WX_ICON test
+
+Use this to compare weather icon rendering (`partly`) in 128, 169 and 192.
+Test mode now shows all three sizes in one view, side by side, with labels.
+
+### Build flags (platformio.ini)
+
+In `build_flags` (env `reterminal_e1001`), use:
+
+- `-DUI_ICON_TEST=1`
+
+When done testing, set `-DUI_ICON_TEST=0` to return to normal UI.
+
+Note: `UI_ICON_SIZE` is not used by this compare view.
+
+### Copy/paste workflow (PowerShell)
+
+Generate and deploy all three icon sizes:
+
+```powershell
+.\tools\50_png_to_lvgl_c.ps1 -Size 128
+.\tools\60_deploy_lvgl_to_ui_img.ps1 -Size 128
+.\tools\50_png_to_lvgl_c.ps1 -Size 169
+.\tools\60_deploy_lvgl_to_ui_img.ps1 -Size 169
+.\tools\50_png_to_lvgl_c.ps1 -Size 192
+.\tools\60_deploy_lvgl_to_ui_img.ps1 -Size 192
+```
+
+Set in `platformio.ini`:
+
+- `-DUI_ICON_TEST=1`
+
+Then run:
+
+```powershell
+.\scripts\ota-upload.ps1
+```
+
+
+

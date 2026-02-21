@@ -1,6 +1,11 @@
 #include "PageManager.h"
 #include "page1.h"
 #include "page2.h"
+#include "ui_icon_test.h"
+
+#ifndef UI_ICON_TEST
+#define UI_ICON_TEST 0
+#endif
 
 // -----------------------------------------------------------------------------
 // Internal state
@@ -30,6 +35,12 @@ void pagemgr_begin(lv_obj_t* root, ui_state_t* state) {
 
   // Safety: state must exist
   if(!g_state) return;
+
+#if UI_ICON_TEST
+  ui_icon_test_build(g_root);
+  ui_state_clear_dirty(g_state);
+  return;
+#endif
 
 #if PAGEMGR_DEMO_DATA
   // Demo values (optional). Prefer injecting via lvgl_port_on_ui_json in Step 9.
@@ -65,6 +76,12 @@ void pagemgr_begin(lv_obj_t* root, ui_state_t* state) {
 // -----------------------------------------------------------------------------
 void pagemgr_update() {
   if(!g_state) return;
+
+#if UI_ICON_TEST
+  ui_state_clear_dirty(g_state);
+  return;
+#endif
+
   if(!g_state->dirty.any) return;
 
   switch (g_current_page) {

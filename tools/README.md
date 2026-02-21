@@ -193,4 +193,7 @@ DESIGN NOTES
 - 192px is recommended default size for KD2
 - All steps are reproducible and script-based (no manual terminal hacks)
 
+For icon-only visual comparison (128/169/192) using compile-time UI test mode,
+see section "UI-WX_ICON test" in the project root README.
+
 End of document.

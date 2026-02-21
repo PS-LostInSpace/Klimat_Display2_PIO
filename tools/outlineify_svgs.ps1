@@ -1,36 +1,30 @@
-$src = "assets/icons/src_svg"
-$strokeWidth = "1.8"
+param(
+  [string]$Src = "assets/icons/work/svg_outline",
+  [string]$StrokeWidth = "2.2"
+)
 
-Get-ChildItem -Path $src -Filter *.svg | ForEach-Object {
-    [xml]$xml = Get-Content $_.FullName -Raw
+$ErrorActionPreference = "Stop"
 
-    $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
-    $ns.AddNamespace("svg", "http://www.w3.org/2000/svg")
+Get-ChildItem -Path $Src -Filter *.svg | ForEach-Object {
+  [xml]$xml = Get-Content $_.FullName -Raw
+  $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
+  $ns.AddNamespace("svg", "http://www.w3.org/2000/svg")
 
-    # Find all path elements
-    $paths = $xml.SelectNodes("//svg:path", $ns)
-
-    foreach ($p in $paths) {
-        $hasStroke = $p.HasAttribute("stroke")
-        $hasFill   = $p.HasAttribute("fill")
-
-        # If the path has no stroke, turn it into an outline path
-        if (-not $hasStroke) {
-            $p.SetAttribute("stroke", "#000")
-            $p.SetAttribute("stroke-width", $strokeWidth)
-            $p.SetAttribute("stroke-linecap", "round")
-            $p.SetAttribute("stroke-linejoin", "round")
-            $p.SetAttribute("vector-effect", "non-scaling-stroke")
-
-            # Ensure outline (no solid fill)
-            $p.SetAttribute("fill", "none")
-        }
-        else {
-            # If it already has stroke, still enforce outline fill
-            $p.SetAttribute("fill", "none")
-        }
+  $paths = $xml.SelectNodes("//svg:path", $ns)
+  foreach ($p in $paths) {
+    if (-not $p.HasAttribute("stroke")) {
+      $p.SetAttribute("stroke", "#000")
+      $p.SetAttribute("stroke-width", $StrokeWidth)
+      $p.SetAttribute("stroke-linecap", "round")
+      $p.SetAttribute("stroke-linejoin", "round")
+      $p.SetAttribute("vector-effect", "non-scaling-stroke")
+      $p.SetAttribute("fill", "none")
+    } else {
+      $p.SetAttribute("fill", "none")
+      $p.SetAttribute("stroke-width", $StrokeWidth)
     }
+  }
 
-    $xml.Save($_.FullName)
-    Write-Host "Outlineified: $($_.Name)"
+  $xml.Save($_.FullName)
+  Write-Host "Outlineified: $($_.Name)"
 }

@@ -1,3 +1,6 @@
+# NOTE: Deprecated on Windows locked-down machines (requires cairo-2.dll).
+# Use: resvg -> PNG -> png_to_lvgl_i2.py instead.
+
 # tools/png_to_lvgl_i2.py
 # PNG -> LVGL C image (LV_IMG_CF_INDEXED_2BIT)
 
