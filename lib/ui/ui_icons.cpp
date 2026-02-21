@@ -10,7 +10,7 @@ void ui_icons_attach_weather_img(lv_obj_t* img_obj) {
   s_weather_img = img_obj;
   if(s_weather_img) {
     lv_obj_clear_flag(s_weather_img, LV_OBJ_FLAG_HIDDEN);
-    lv_img_set_src(s_weather_img, &kd_weather_unknown_128);
+    lv_img_set_src(s_weather_img, &kd_weather_unknown_192);
   }
 }
 
@@ -31,40 +31,40 @@ static bool icontains(const char* haystack, const char* needle) {
   return false;
 }
 
-static const lv_img_dsc_t* map_symbol_to_icon_128(const char* s) {
-  if(!s || !*s) return &kd_weather_unknown_128;
+static const lv_img_dsc_t* map_symbol_to_icon_192(const char* s) {
+  if(!s || !*s) return &kd_weather_unknown_192;
 
   if(icontains(s, "unknown") || icontains(s, "null") || icontains(s, "none")) {
-    return &kd_weather_unknown_128;
+    return &kd_weather_unknown_192;
   }
 
   if(icontains(s, "clear-night") || icontains(s, "_night") || icontains(s, "night")) {
-    return &kd_weather_clear_night_128;
+    return &kd_weather_clear_night_192;
   }
 
-  if(icontains(s, "fog")) return &kd_weather_fog_128;
-  if(icontains(s, "wind")) return &kd_weather_wind_128;
+  if(icontains(s, "fog")) return &kd_weather_fog_192;
+  if(icontains(s, "wind")) return &kd_weather_wind_192;
 
-  if(icontains(s, "sleet") || icontains(s, "snowy-rainy")) return &kd_weather_sleet_128;
-  if(icontains(s, "snow")) return &kd_weather_snow_128;
+  if(icontains(s, "sleet") || icontains(s, "snowy-rainy")) return &kd_weather_sleet_192;
+  if(icontains(s, "snow")) return &kd_weather_snow_192;
 
   if(icontains(s, "rain") || icontains(s, "pour") || icontains(s, "showers") || icontains(s, "hail") || icontains(s, "lightning-rainy")) {
-    return &kd_weather_rain_128;
+    return &kd_weather_rain_192;
   }
 
-  if(icontains(s, "partly") || icontains(s, "fair")) return &kd_weather_partly_128;
-  if(icontains(s, "cloud")) return &kd_weather_cloud_128;
+  if(icontains(s, "partly") || icontains(s, "fair")) return &kd_weather_partly_192;
+  if(icontains(s, "cloud")) return &kd_weather_cloud_192;
 
   if(icontains(s, "clearsky") || icontains(s, "sunny") || icontains(s, "clear-day")) {
-    return &kd_weather_sun_128;
+    return &kd_weather_sun_192;
   }
 
-  return &kd_weather_unknown_128;
+  return &kd_weather_unknown_192;
 }
 
 void ui_set_weather_icon(const char* symbol) {
   if(!s_weather_img) return;
 
-  const lv_img_dsc_t* img = map_symbol_to_icon_128(symbol);
+  const lv_img_dsc_t* img = map_symbol_to_icon_192(symbol);
   lv_img_set_src(s_weather_img, img);
 }
