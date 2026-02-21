@@ -2,7 +2,7 @@
   <defs>
     <symbol id="a" viewBox="0 0 342 234">
       <g>
-        <path fill="none" stroke="#000" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2.2" d="M264.2 21.3A39.9 39.9 0 01333 49c0 22-18 40-40 40H9m139.2 123.7A39.9 39.9 0 00217 185c0-22-18-40-40-40H9" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+        <path fill="none" stroke="#000" stroke-linecap="round" stroke-miterlimit="10" stroke-width="6.0" d="M264.2 21.3A39.9 39.9 0 01333 49c0 22-18 40-40 40H9m139.2 123.7A39.9 39.9 0 00217 185c0-22-18-40-40-40H9" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
       </g>
     </symbol>
     <style>.id{fill:none;stroke:#000;stroke-linecap:round;stroke-miterlimit:10;stroke-width:18px;}</style>
