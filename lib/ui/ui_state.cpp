@@ -20,6 +20,7 @@ void ui_state_init(ui_state_t* s) {
 
   s->pressure_mbar = NAN;
   s->humidity_pct = 255;
+  s->uv_index = NAN;
 
   strcpy(s->wx_symbol, "unknown");
   strcpy(s->forecast_txt, "--\n--");
@@ -98,12 +99,13 @@ void ui_state_set_temp(ui_state_t* s, float out_c, float feels_c) {
   if(changed) { s->dirty.temps = true; s->dirty.any = true; }
 }
 
-void ui_state_set_atm(ui_state_t* s, float pressure_mbar, uint8_t humidity_pct) {
+void ui_state_set_atm(ui_state_t* s, float pressure_mbar, uint8_t humidity_pct, float uv_index) {
   if(!s) return;
   bool changed = false;
 
   if(s->pressure_mbar != pressure_mbar) { s->pressure_mbar = pressure_mbar; changed = true; }
   if(s->humidity_pct != humidity_pct) { s->humidity_pct = humidity_pct; changed = true; }
+  if(s->uv_index != uv_index) { s->uv_index = uv_index; changed = true; }
 
   if(changed) { s->dirty.atmosphere = true; s->dirty.any = true; }
 }

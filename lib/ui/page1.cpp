@@ -30,6 +30,7 @@ static lv_obj_t* g_lbl_feels_unit = nullptr;
 
 static lv_obj_t* g_lbl_atm_pressure = nullptr; // e.g. "Tryck: 1000.3 mbar"
 static lv_obj_t* g_lbl_atm_humidity = nullptr; // e.g. "Fukt:  90 %"
+static lv_obj_t* g_lbl_atm_uv       = nullptr; // e.g. "UV:    2.4"
 static lv_obj_t* g_lbl_updated      = nullptr; // e.g. "Uppdaterat: 7 min sedan"
 static lv_obj_t* g_lbl_forecast_txt = nullptr;
 
@@ -444,6 +445,9 @@ void page1_build(lv_obj_t* parent) {
     g_lbl_atm_humidity = create_label(col_right, "Fukt:  -- %");
     lv_obj_align_to(g_lbl_atm_humidity, g_lbl_atm_pressure, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 6);
 
+    g_lbl_atm_uv = create_label(col_right, "UV:    --");
+    lv_obj_align_to(g_lbl_atm_uv, g_lbl_atm_humidity, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 6);
+
     // Updated label (store pointer)
     g_lbl_updated = create_label(col_right, "Uppdaterat: --");
     ui_set_font(g_lbl_updated, UI_FONT_SMALL);
@@ -538,6 +542,15 @@ void page1_update(const ui_state_t* s) {
         char buf[24];
         snprintf(buf, sizeof(buf), "Fukt:  %u %%", (unsigned)s->humidity_pct);
         lv_label_set_text(g_lbl_atm_humidity, buf);
+      }
+    }
+    if(g_lbl_atm_uv) {
+      if(isnan(s->uv_index)) {
+        lv_label_set_text(g_lbl_atm_uv, "UV:    --");
+      } else {
+        char buf[24];
+        snprintf(buf, sizeof(buf), "UV:    %.1f", s->uv_index);
+        lv_label_set_text(g_lbl_atm_uv, buf);
       }
     }
   }

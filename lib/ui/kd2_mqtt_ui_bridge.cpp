@@ -2,6 +2,7 @@
 #include "ui_state.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <math.h>
 
 static uint32_t g_last_mqtt_rx_ms = 0;
 
@@ -64,10 +65,18 @@ bool kd2_ui_apply_mqtt_json(ui_state_t* s, const char* json, size_t len)
     // Atmosphere (preferred nested format)
     if (doc["atm"].is<JsonObject>()) {
         JsonObject atm = doc["atm"].as<JsonObject>();
-        ui_state_set_atm(s, atm["pressure"] | 0.0f, atm["humidity"] | 0);
+        float uv = NAN;
+        if (!atm["uv"].isNull()) {
+            uv = atm["uv"].as<float>();
+        }
+        ui_state_set_atm(s, atm["pressure"] | 0.0f, atm["humidity"] | 0, uv);
         applied_any = true;
-    } else if (!doc["pressure"].isNull() || !doc["rh"].isNull() || !doc["humidity"].isNull()) {
-        ui_state_set_atm(s, doc["pressure"] | 0.0f, doc["rh"] | (doc["humidity"] | 0));
+    } else if (!doc["pressure"].isNull() || !doc["rh"].isNull() || !doc["humidity"].isNull() || !doc["uv"].isNull()) {
+        float uv = NAN;
+        if (!doc["uv"].isNull()) {
+            uv = doc["uv"].as<float>();
+        }
+        ui_state_set_atm(s, doc["pressure"] | 0.0f, doc["rh"] | (doc["humidity"] | 0), uv);
         applied_any = true;
     }
 

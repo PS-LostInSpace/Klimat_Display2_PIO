@@ -23,6 +23,7 @@ typedef struct {
   // Atmosphere
   float pressure_mbar;      // e.g. 1000.3
   uint8_t humidity_pct;     // e.g. 90
+  float uv_index;           // e.g. 2.4, NAN if unknown
 
   // Weather symbol id (from HA/MET/etc)
   char wx_symbol[32];       // e.g. "clearsky_day" or "rain"
@@ -50,7 +51,7 @@ typedef struct {
 void ui_state_set_wind(ui_state_t* s, const char* dir_txt, float ms, int16_t deg /*use -1 if unknown*/);
 void ui_state_set_rain(ui_state_t* s, uint8_t p30, uint8_t p60, uint8_t p90);
 void ui_state_set_temp(ui_state_t* s, float out_c, float feels_c);
-void ui_state_set_atm(ui_state_t* s, float pressure_mbar, uint8_t humidity_pct);
+void ui_state_set_atm(ui_state_t* s, float pressure_mbar, uint8_t humidity_pct, float uv_index);
 void ui_state_set_updated(ui_state_t* s, uint16_t minutes_ago);
 void ui_state_set_icon(ui_state_t* s, const char* symbol);
 void ui_state_set_forecast(ui_state_t* s, const char* txt);
