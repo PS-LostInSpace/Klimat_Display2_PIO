@@ -55,7 +55,7 @@ static const lv_img_dsc_t* map_symbol_to_icon_192(const char* s) {
   if(icontains(s, "partly") || icontains(s, "fair")) return &kd_weather_partly_192;
   if(icontains(s, "cloud")) return &kd_weather_cloud_192;
 
-  if(icontains(s, "clearsky") || icontains(s, "sunny") || icontains(s, "clear-day")) {
+  if(icontains(s, "clearsky") || icontains(s, "sunny") || icontains(s, "clear-day") || icontains(s, "clear") || icontains(s, "sun")) {
     return &kd_weather_sun_192;
   }
 
