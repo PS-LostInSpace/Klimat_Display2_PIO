@@ -55,10 +55,32 @@ bool kd2_ui_apply_mqtt_json(ui_state_t* s, const char* json, size_t len)
     // Rain
     if (doc["rain"].is<JsonArray>()) {
         JsonArray rain = doc["rain"].as<JsonArray>();
-        ui_state_set_rain(s, rain[0] | 0, rain[1] | 0, rain[2] | 0);
+        const uint8_t p30 = (uint8_t)(rain[0] | 0);
+        const uint8_t p60 = (uint8_t)(rain[1] | 0);
+        const uint8_t p90 = (uint8_t)(rain[2] | 0);
+
+        const bool rain_changed =
+            (s->rain_pct[0] != p30) ||
+            (s->rain_pct[1] != p60) ||
+            (s->rain_pct[2] != p90);
+
+        if (rain_changed) {
+            ui_state_set_rain(s, p30, p60, p90);
+        }
         applied_any = true;
     } else if (!doc["rain_30"].isNull() || !doc["rain_60"].isNull() || !doc["rain_90"].isNull()) {
-        ui_state_set_rain(s, doc["rain_30"] | 0, doc["rain_60"] | 0, doc["rain_90"] | 0);
+        const uint8_t p30 = (uint8_t)(doc["rain_30"] | 0);
+        const uint8_t p60 = (uint8_t)(doc["rain_60"] | 0);
+        const uint8_t p90 = (uint8_t)(doc["rain_90"] | 0);
+
+        const bool rain_changed =
+            (s->rain_pct[0] != p30) ||
+            (s->rain_pct[1] != p60) ||
+            (s->rain_pct[2] != p90);
+
+        if (rain_changed) {
+            ui_state_set_rain(s, p30, p60, p90);
+        }
         applied_any = true;
     }
 

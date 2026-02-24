@@ -502,17 +502,19 @@ void page1_update(const ui_state_t* s) {
   // RAIN
   if(s->dirty.rain) {
     for(int i=0;i<3;i++) {
+      const uint8_t incoming_pct = s->rain_pct[i];
+
       if(g_lbl_rain_pct[i]) {
-        if(s->rain_pct[i] > 100) {
+        if(incoming_pct > 100) {
           lv_label_set_text(g_lbl_rain_pct[i], "--");
         } else {
           char buf[8];
-          snprintf(buf, sizeof(buf), "%u%%", (unsigned)s->rain_pct[i]);
+          snprintf(buf, sizeof(buf), "%u%%", (unsigned)incoming_pct);
           lv_label_set_text(g_lbl_rain_pct[i], buf);
         }
       }
       if(g_rain_bar[i]) {
-        const uint8_t rain_pct = (s->rain_pct[i] > 100) ? 0 : s->rain_pct[i];
+        const uint8_t rain_pct = (incoming_pct > 100) ? 0 : incoming_pct;
         set_rain_bar_from_pct(g_rain_bar[i], rain_pct);
       }
     }
