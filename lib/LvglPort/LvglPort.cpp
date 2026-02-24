@@ -28,6 +28,7 @@ static EPaper epaper;
 // -----------------------------------------------------------------------------
 static const uint32_t EINK_FULL_REFRESH_MS = 15UL * 60UL * 1000UL; // every 15 minutes
 static const uint16_t EINK_FULL_REFRESH_AFTER_N_UPDATES = 40;      // or after 40 UI updates
+static const uint32_t WEATHER_STALE_MS = 6UL * 60UL * 1000UL;
 
 
 #ifndef KD2_LVCONF_LOADED
@@ -35,6 +36,8 @@ static const uint16_t EINK_FULL_REFRESH_AFTER_N_UPDATES = 40;      // or after 4
 #endif
 
 static ui_state_t g_state;
+static bool g_prev_weather_alive_valid = false;
+static bool g_prev_weather_alive = false;
 
 static volatile bool g_has_mqtt_ui_msg = false;
 static char g_ui_json_buf[1024];    // justera vid behov
@@ -106,6 +109,8 @@ void lvgl_port_begin() {
   lv_init();
 
   ui_state_init(&g_state);
+  g_prev_weather_alive_valid = false;
+  g_prev_weather_alive = false;
 
   // ---- LVGL draw buffer ----
   // 800px wide * N lines (partial buffer)
@@ -146,23 +151,27 @@ g_eink_refresh = EinkRefresh::Normal;
 
 void lvgl_port_loop() {
   // ---------------------------------------------------------------------------
-  // 0) Time-based state updates (NO direct UI update here)
+  // 0) Weather liveness edge-trigger (NO direct UI update here)
   // ---------------------------------------------------------------------------
-  static uint32_t last_minute = 0;
-  const uint32_t now = millis();
-  if (now - last_minute >= 60000) {
-    last_minute = now;
+  {
+    const uint32_t now_ms = millis();
     const uint32_t last_mqtt_rx_ms = kd2_ui_last_mqtt_rx_ms();
-    if (last_mqtt_rx_ms != 0) {
-      const uint32_t age_ms = now - last_mqtt_rx_ms;
-      const bool fresh = age_ms < (6UL * 60UL * 1000UL);
-      if (fresh) {
+    const bool have_rx = (last_mqtt_rx_ms != 0);
+
+    bool is_alive = false;
+    if (have_rx) {
+      const uint32_t age_ms = now_ms - last_mqtt_rx_ms;
+      is_alive = (age_ms < WEATHER_STALE_MS);
+    }
+
+    if (!g_prev_weather_alive_valid || (is_alive != g_prev_weather_alive)) {
+      if (is_alive) {
         ui_state_set_updated(&g_state, 0);
       } else {
         ui_state_set_updated(&g_state, UINT16_MAX);
       }
-    } else {
-      ui_state_set_updated(&g_state, UINT16_MAX);
+      g_prev_weather_alive = is_alive;
+      g_prev_weather_alive_valid = true;
     }
   }
 
