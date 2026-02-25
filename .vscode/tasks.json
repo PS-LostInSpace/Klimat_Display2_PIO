@@ -28,6 +28,108 @@
         "-SkipBuild"
       ],
       "problemMatcher": []
+    },
+    {
+      "label": "Build: Prod",
+      "type": "shell",
+      "command": "pio",
+      "args": [
+        "run",
+        "-e",
+        "kd2_prod"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build: Dev",
+      "type": "shell",
+      "command": "pio",
+      "args": [
+        "run",
+        "-e",
+        "kd2_dev"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Upload USB: Prod (COM4)",
+      "type": "shell",
+      "command": "pio",
+      "args": [
+        "run",
+        "-e",
+        "kd2_prod",
+        "-t",
+        "upload",
+        "--upload-port",
+        "COM4"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Upload USB: Dev (COM4)",
+      "type": "shell",
+      "command": "pio",
+      "args": [
+        "run",
+        "-e",
+        "kd2_dev",
+        "-t",
+        "upload",
+        "--upload-port",
+        "COM4"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Monitor Serial (COM4)",
+      "type": "shell",
+      "command": "pio",
+      "args": [
+        "device",
+        "monitor",
+        "-p",
+        "COM4",
+        "-b",
+        "115200"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "OTA: Build + Upload (Prod)",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/ota-upload.ps1",
+        "-PioEnv",
+        "kd2_prod"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "OTA: Build + Upload (Dev)",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/ota-upload.ps1",
+        "-PioEnv",
+        "kd2_dev"
+      ],
+      "group": "build",
+      "problemMatcher": []
     }
   ]
 }
