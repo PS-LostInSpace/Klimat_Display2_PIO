@@ -53,8 +53,6 @@ void ui_state_clear_dirty(ui_state_t* s) {
   s->dirty.any = false;
 }
 
-#include <string.h>  // strncpy, strncmp
-
 static bool str_changed(const char* a, const char* b, size_t maxlen) {
   if(!a) a = "";
   if(!b) b = "";
