@@ -2,6 +2,7 @@
 #ifndef LV_CONF_H
 #define LV_CONF_H //Proof of lv_conf.h is being included
 #endif
+#define KD2_LVCONF_LOADED 1
 
 
 // Minimal LVGL config for proof-of-life on ePaper

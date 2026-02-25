@@ -1,10 +1,13 @@
 #include "PageManager.h"
 #include "page1.h"
 #include "page2.h"
-#include "ui_icon_test.h"
 
 #ifndef UI_ICON_TEST
 #define UI_ICON_TEST 0
+#endif
+
+#if UI_ICON_TEST
+#include "ui_icon_test.h"
 #endif
 
 // -----------------------------------------------------------------------------

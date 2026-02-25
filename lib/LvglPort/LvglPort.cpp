@@ -8,7 +8,14 @@
 #include "PageManager.h"
 #include "fonts/kd2_fonts.h"
 #include "kd2_mqtt_ui_bridge.h"
+
+#ifndef KD2_USE_DUMMY_JSON
+#define KD2_USE_DUMMY_JSON 0
+#endif
+
+#if KD2_USE_DUMMY_JSON
 #include "kd2_dummy_data.h" // Optional: demo data for testing without MQTT
+#endif
 
 
 // ============================================================================
