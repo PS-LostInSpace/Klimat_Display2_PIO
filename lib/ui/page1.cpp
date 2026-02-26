@@ -291,7 +291,7 @@ void page1_build(lv_obj_t* parent) {
 
     // Wind direction in center
     lv_obj_t* lbl_dir = create_label(compass, "VNV");
-    ui_set_font(lbl_dir, UI_FONT_H2);
+    ui_set_font(lbl_dir, UI_FONT_H1);
     lv_obj_set_width(lbl_dir, 120);
     lv_obj_set_style_text_align(lbl_dir, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(lbl_dir, LV_ALIGN_CENTER, 0, -24);
@@ -303,7 +303,7 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_align(speed_box, LV_ALIGN_CENTER, 0, 26);
 
     lv_obj_t* lbl_speed = create_label(speed_box, "20.3");
-    ui_set_font(lbl_speed, UI_FONT_H2);
+    ui_set_font(lbl_speed, UI_FONT_H1);
     lv_obj_align(lbl_speed, LV_ALIGN_LEFT_MID, 0, 0);
     g_lbl_wind_speed = lbl_speed;
 
