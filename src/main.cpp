@@ -8,6 +8,7 @@
 
 #ifdef HAS_WIFI
 #include "AppNetwork.h"
+#include "Kd2Mqtt.h"
 #endif
 
 #ifdef HAS_WEB_OTA

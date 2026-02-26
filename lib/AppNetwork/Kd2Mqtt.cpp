@@ -3,47 +3,10 @@
 #include <Arduino.h>
 #define MQTT_MAX_PACKET_SIZE 1024
 #include <PubSubClient.h>
-#include "secret_credentials.h"   // SECRET_SSID, SECRET_PASS, MQTT creds
+#include "secret_credentials.h"
+#include "AppNetwork.h"
 #include "LvglPort.h"
 #include <cstring>
-
-#if defined(SECRET_WIFI_SSID)
-#define KD2_WIFI_SSID SECRET_WIFI_SSID
-#elif defined(SECRET_SSID)
-#define KD2_WIFI_SSID SECRET_SSID
-#endif
-
-#if defined(SECRET_WIFI_PASS)
-#define KD2_WIFI_PASS SECRET_WIFI_PASS
-#elif defined(SECRET_PASS)
-#define KD2_WIFI_PASS SECRET_PASS
-#endif
-
-#if defined(SECRET_MQTT_USERNAME2)
-#define KD2_MQTT_USER SECRET_MQTT_USERNAME2
-#elif defined(SECRET_MQTT_USERNAME)
-#define KD2_MQTT_USER SECRET_MQTT_USERNAME
-#endif
-
-#if defined(SECRET_MQTT_PASS2)
-#define KD2_MQTT_PASS SECRET_MQTT_PASS2
-#elif defined(SECRET_MQTT_PASS)
-#define KD2_MQTT_PASS SECRET_MQTT_PASS
-#endif
-
-#if defined(SECRET_MQTT_HOST)
-#define KD2_MQTT_HOST SECRET_MQTT_HOST
-#elif defined(SECRET_TPi_IP)
-#define KD2_MQTT_HOST SECRET_TPi_IP
-#else
-#define KD2_MQTT_HOST "127.0.0.1"
-#endif
-
-#if defined(SECRET_MQTT_PORT)
-#define KD2_MQTT_PORT SECRET_MQTT_PORT
-#else
-#define KD2_MQTT_PORT 1883
-#endif
 
 // ---- MQTT config ----
 static const char* kTopicPage1 = "home/display/kd2/page1/state";
@@ -61,16 +24,6 @@ static void build_client_id() {
   snprintf(g_mqtt_client_id, sizeof(g_mqtt_client_id), "KD2_%04X%08X", hi, lo);
 }
 
-// Basic WiFi connect (keep it minimal for now)
-static void ensure_wifi() {
-  if(WiFi.status() == WL_CONNECTED) return;
-  WiFi.begin(KD2_WIFI_SSID, KD2_WIFI_PASS);
-  uint32_t t0 = millis();
-  while(WiFi.status() != WL_CONNECTED && (millis() - t0) < 15000) {
-    delay(250);
-  }
-}
-
 bool kd2_mqtt_is_connected() {
   return client.connected();
 }
@@ -80,14 +33,14 @@ static void reconnect_mqtt() {
   static uint32_t intervalMs = 5000;
   static uint8_t fails = 0;
 
-  if (WiFi.status() != WL_CONNECTED) return;
+  if (!network_is_connected()) return;
 
   if(millis() - lastAttempt < intervalMs) return;
   lastAttempt = millis();
 
-  Serial.printf("[MQTT] reconnect attempt host=%s port=%u\n", KD2_MQTT_HOST, (unsigned)KD2_MQTT_PORT);
+  Serial.printf("[MQTT] reconnect attempt host=%s port=%u\n", SECRET_MQTT_HOST, (unsigned)SECRET_MQTT_PORT);
 
-  if(client.connect(g_mqtt_client_id, KD2_MQTT_USER, KD2_MQTT_PASS)) {
+  if(client.connect(g_mqtt_client_id, SECRET_MQTT_USERNAME2, SECRET_MQTT_PASS2)) {
 
     intervalMs = 5000;
     fails = 0;
@@ -108,7 +61,6 @@ static void reconnect_mqtt() {
 }
 
 void kd2_mqtt_begin() {
-  ensure_wifi();
   build_client_id();
   const uint16_t mqtt_buf_size = 1024;
   bool buf_ok = client.setBufferSize(mqtt_buf_size);
@@ -116,16 +68,14 @@ void kd2_mqtt_begin() {
   client.setKeepAlive(120);
   client.setSocketTimeout(15);
   Serial.printf("[MQTT] clientId=%s\n", g_mqtt_client_id);
-#if defined(SECRET_MQTT_HOST) && defined(SECRET_MQTT_PORT)
   client.setServer(SECRET_MQTT_HOST, SECRET_MQTT_PORT);
-#else
-  client.setServer(KD2_MQTT_HOST, KD2_MQTT_PORT);
-#endif
   client.setCallback(mqtt_callback);
 }
 
 void kd2_mqtt_loop() {
-  ensure_wifi();
+  if (!network_is_connected()) {
+    return;
+  }
   if(!client.connected()) {
     reconnect_mqtt();
     return;
