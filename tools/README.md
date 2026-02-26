@@ -136,7 +136,8 @@ Example:
 60_deploy_lvgl_to_ui_img.ps1
 Copies generated LVGL .c files into firmware directory:
 
-lib/ui/img/
+- Size 192 -> lib/ui/img/ (prod)
+- Size 128/169 -> lib/ui_dev/img/ (dev/test)
 
 Example:
 

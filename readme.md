@@ -89,6 +89,11 @@ Skip build and upload latest compiled firmware only:
 Use this to compare weather icon rendering (`partly`) in 128, 169 and 192.
 Test mode now shows all three sizes in one view, side by side, with labels.
 
+Prod/dev icon split:
+
+- 192px icons are deployed to `lib/ui/img` (prod path)
+- 128/169px icons are deployed to `lib/ui_dev/img` (dev/test path)
+
 ### Build flags (platformio.ini)
 
 In `build_flags` (env `reterminal_e1001`), use:

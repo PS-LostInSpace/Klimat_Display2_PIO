@@ -6,7 +6,11 @@ param(
 $ErrorActionPreference = "Stop"
 
 $src = "assets/icons/out/lvgl/$Size"
-$dst = "lib/ui/img"
+if ($Size -eq 192) {
+  $dst = "lib/ui/img"
+} else {
+  $dst = "lib/ui_dev/img"
+}
 
 New-Item -ItemType Directory -Force -Path $dst | Out-Null
 Copy-Item "$src\kd_weather_*_$Size.c" $dst -Force
