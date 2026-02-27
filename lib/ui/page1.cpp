@@ -16,6 +16,7 @@ static lv_obj_t* g_wx_img = nullptr;
 
 static lv_obj_t* g_lbl_wind_dir = nullptr;
 static lv_obj_t* g_lbl_wind_speed = nullptr;
+static lv_obj_t* g_lbl_ms = nullptr;
 static lv_obj_t* g_wind_arrow = nullptr;
 static lv_obj_t* g_compass = nullptr;
 static int16_t   g_wind_arrow_deg = 315;
@@ -307,9 +308,10 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_align(lbl_speed, LV_ALIGN_LEFT_MID, 0, 0);
     g_lbl_wind_speed = lbl_speed;
 
-    lv_obj_t* lbl_ms = create_label(speed_box, "m/s");
-    ui_set_font(lbl_ms, UI_FONT_BODY);              // du ville ha BODY här
-    lv_obj_align_to(lbl_ms, lbl_speed, LV_ALIGN_OUT_RIGHT_BOTTOM, 4, -4);
+    g_lbl_ms = create_label(speed_box, "m/s");
+    ui_set_font(g_lbl_ms, UI_FONT_BODY); // du ville ha BODY här
+    // Placera lbl_ms direkt efter lbl_speed, linjerad i underkant
+    lv_obj_align_to(g_lbl_ms, lbl_speed, LV_ALIGN_OUT_RIGHT_BOTTOM, 4, 0);
 
     lv_obj_t* line = create_box(col_left, W_LEFT - 28, 1, false);
     lv_obj_set_style_bg_opa(line, LV_OPA_100, 0);
@@ -401,14 +403,15 @@ void page1_build(lv_obj_t* parent) {
     ui_set_font(lbl_ute, UI_FONT_SUBTITLE);
     lv_obj_align(lbl_ute, LV_ALIGN_TOP_LEFT, 0, 0);
 
-    // Split value and unit so °C can be SMALL and baseline-aligned
+    // Split value and unit so °C kan linjeras direkt efter värdet, i underkant
     lv_obj_t* ute_val = create_label(col_right, "-22.3");
     ui_set_font(ute_val, UI_FONT_DISPLAY1);
     lv_obj_align(ute_val, LV_ALIGN_TOP_LEFT, 0, 22);
 
     lv_obj_t* ute_unit = create_label(col_right, "°C");
     ui_set_font(ute_unit, UI_FONT_BODY);
-    lv_obj_align_to(ute_unit, ute_val, LV_ALIGN_OUT_RIGHT_BOTTOM, 6, -10);
+    // Justera offset här för att linjera underkant
+    lv_obj_align_to(ute_unit, ute_val, LV_ALIGN_OUT_RIGHT_BOTTOM, 4, 0);
 
     g_lbl_temp_out = ute_val;
     g_lbl_temp_out_unit = ute_unit;
@@ -424,7 +427,8 @@ void page1_build(lv_obj_t* parent) {
 
     lv_obj_t* feels_unit = create_label(col_right, "°C");
     ui_set_font(feels_unit, UI_FONT_BODY);
-    lv_obj_align_to(feels_unit, feels_val, LV_ALIGN_OUT_RIGHT_BOTTOM, 6, -4);
+    // Justera offset här för att linjera underkant
+    lv_obj_align_to(feels_unit, feels_val, LV_ALIGN_OUT_RIGHT_BOTTOM, 4, 0);
 
     g_lbl_feels = feels_val;
     g_lbl_feels_unit = feels_unit;
@@ -485,6 +489,11 @@ void page1_update(const ui_state_t* s) {
   if(s->dirty.wind) {
     if(g_lbl_wind_dir) lv_label_set_text(g_lbl_wind_dir, s->wind_dir_txt);
     set_label_float_1(g_lbl_wind_speed, s->wind_ms);
+    // Efter att värdet ändrats, uppdatera layout och placera lbl_ms direkt efter värdet, linjerad i underkant
+    lv_obj_update_layout(g_lbl_wind_speed);
+    if(g_lbl_ms && g_lbl_wind_speed) {
+      lv_obj_align_to(g_lbl_ms, g_lbl_wind_speed, LV_ALIGN_OUT_RIGHT_BOTTOM, 4, -6); // m/s aligned to speed value with a small gap and 6px down to better align baselines
+    }
 
     // Rotate wind arrow (deg)
     if(g_wind_arrow) {
@@ -524,6 +533,17 @@ void page1_update(const ui_state_t* s) {
   if(s->dirty.temps) {
     set_label_float_1(g_lbl_temp_out, s->temp_out_c);
     set_label_float_1(g_lbl_feels, s->feels_like_c);
+
+    // Re-align °C units after value text has changed (dynamic width)
+    if(g_lbl_temp_out && g_lbl_temp_out_unit) {
+      lv_obj_update_layout(g_lbl_temp_out);
+      lv_obj_align_to(g_lbl_temp_out_unit, g_lbl_temp_out, LV_ALIGN_OUT_RIGHT_BOTTOM, 4, -12); // °C aligned to temp_out value with a small gap and 12px down to better align baselines
+    }
+
+    if(g_lbl_feels && g_lbl_feels_unit) {
+      lv_obj_update_layout(g_lbl_feels);
+      lv_obj_align_to(g_lbl_feels_unit, g_lbl_feels, LV_ALIGN_OUT_RIGHT_BOTTOM, 4, -6); //  °C aligned to feels value with a small gap and 6px down to better align baselines
+    }
   }
 
   // ATM
