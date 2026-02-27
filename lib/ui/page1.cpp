@@ -19,7 +19,7 @@ static lv_obj_t* g_lbl_wind_speed = nullptr;
 static lv_obj_t* g_lbl_ms = nullptr;
 static lv_obj_t* g_wind_arrow = nullptr;
 static lv_obj_t* g_compass = nullptr;
-static int16_t   g_wind_arrow_deg = 315;
+static int16_t g_wind_arrow_deg = -1;   // -1 = no valid direction
 
 static lv_obj_t* g_lbl_rain_pct[3] = {nullptr,nullptr,nullptr};
 
@@ -284,8 +284,7 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_add_event_cb(g_wind_arrow, wind_arrow_event_cb, LV_EVENT_DRAW_MAIN, nullptr);
 
     // initläge
-    g_wind_arrow_deg = 315;
-    lv_obj_invalidate(g_wind_arrow);
+    lv_obj_add_flag(g_wind_arrow, LV_OBJ_FLAG_HIDDEN);
 
     // Triangeln ska alltid ligga över N/O/S/V
     lv_obj_move_foreground(g_wind_arrow);
@@ -487,23 +486,46 @@ void page1_update(const ui_state_t* s) {
 
   // WIND
   if(s->dirty.wind) {
-    if(g_lbl_wind_dir) lv_label_set_text(g_lbl_wind_dir, s->wind_dir_txt);
-    set_label_float_1(g_lbl_wind_speed, s->wind_ms);
-    // Efter att värdet ändrats, uppdatera layout och placera lbl_ms direkt efter värdet, linjerad i underkant
-    lv_obj_update_layout(g_lbl_wind_speed);
-    if(g_lbl_ms && g_lbl_wind_speed) {
-      lv_obj_align_to(g_lbl_ms, g_lbl_wind_speed, LV_ALIGN_OUT_RIGHT_BOTTOM, 4, -6); // m/s aligned to speed value with a small gap and 6px down to better align baselines
+
+    const bool has_speed = !isnan(s->wind_ms);
+    const bool has_dir   = (s->wind_deg >= 0) && (s->wind_dir_txt[0] != '\0');
+
+    // ----- Direction text -----
+    if(g_lbl_wind_dir) {
+      if(has_dir) {
+        lv_label_set_text(g_lbl_wind_dir, s->wind_dir_txt);
+      } else {
+        lv_label_set_text(g_lbl_wind_dir, "--");
+      }
     }
 
-    // Rotate wind arrow (deg)
+    // ----- Speed text -----
+    if(g_lbl_wind_speed) {
+      if(has_speed) {
+        char buf[16];
+        snprintf(buf, sizeof(buf), "%.1f", s->wind_ms);
+        lv_label_set_text(g_lbl_wind_speed, buf);
+      } else {
+        lv_label_set_text(g_lbl_wind_speed, "--.-");
+      }
+    }
+
+    // Align m/s dynamically
+    if(g_lbl_wind_speed && g_lbl_ms) {
+      lv_obj_update_layout(g_lbl_wind_speed);
+      lv_obj_align_to(g_lbl_ms, g_lbl_wind_speed, LV_ALIGN_OUT_RIGHT_MID, 4, 0);
+    }
+
+    // ----- Arrow -----
     if(g_wind_arrow) {
-      if(s->wind_deg >= 0) {
+      if(has_dir) {
         g_wind_arrow_deg = s->wind_deg;
         lv_obj_clear_flag(g_wind_arrow, LV_OBJ_FLAG_HIDDEN);
         lv_obj_move_foreground(g_wind_arrow);
         lv_obj_invalidate(g_wind_arrow);
       } else {
         lv_obj_add_flag(g_wind_arrow, LV_OBJ_FLAG_HIDDEN);
+        g_wind_arrow_deg = -1;
       }
     }
   }
