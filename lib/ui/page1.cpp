@@ -32,7 +32,7 @@ static lv_obj_t* g_lbl_feels_unit = nullptr;
 static lv_obj_t* g_lbl_atm_pressure = nullptr; // e.g. "Tryck: 1000.3 mbar"
 static lv_obj_t* g_lbl_atm_humidity = nullptr; // e.g. "Fukt:  90 %"
 static lv_obj_t* g_lbl_atm_uv       = nullptr; // e.g. "UV:    2.4"
-static lv_obj_t* g_lbl_updated      = nullptr; // e.g. "Uppdaterat: 7 min sedan"
+static lv_obj_t* g_lbl_updated      = nullptr; // e.g. "Uppdaterat: nyss"
 static lv_obj_t* g_lbl_forecast_txt = nullptr;
 
 static const char* g_rain_t[3] = {"30", "60", "90"};
@@ -291,7 +291,7 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_move_foreground(g_wind_arrow);
 
     // Wind direction in center
-    lv_obj_t* lbl_dir = create_label(compass, "VNV");
+    lv_obj_t* lbl_dir = create_label(compass, "--");
     ui_set_font(lbl_dir, UI_FONT_H1);
     lv_obj_set_width(lbl_dir, 120);
     lv_obj_set_style_text_align(lbl_dir, LV_TEXT_ALIGN_CENTER, 0);
@@ -303,7 +303,7 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_set_style_bg_opa(speed_box, LV_OPA_0, 0);
     lv_obj_align(speed_box, LV_ALIGN_CENTER, 0, 26);
 
-    lv_obj_t* lbl_speed = create_label(speed_box, "20.3");
+    lv_obj_t* lbl_speed = create_label(speed_box, "--.-");
     ui_set_font(lbl_speed, UI_FONT_H1);
     lv_obj_align(lbl_speed, LV_ALIGN_LEFT_MID, 0, 0);
     g_lbl_wind_speed = lbl_speed;
@@ -404,7 +404,7 @@ void page1_build(lv_obj_t* parent) {
     lv_obj_align(lbl_ute, LV_ALIGN_TOP_LEFT, 0, 0);
 
     // Split value and unit so °C kan linjeras direkt efter värdet, i underkant
-    lv_obj_t* ute_val = create_label(col_right, "-22.3");
+    lv_obj_t* ute_val = create_label(col_right, "--.-");
     ui_set_font(ute_val, UI_FONT_DISPLAY1);
     lv_obj_align(ute_val, LV_ALIGN_TOP_LEFT, 0, 22);
 
@@ -421,7 +421,7 @@ void page1_build(lv_obj_t* parent) {
     ui_set_font(lbl_feels, UI_FONT_BODY);
     lv_obj_align(lbl_feels, LV_ALIGN_TOP_LEFT, 0, 110 + FEELS_Y_OFFSET);
 
-    lv_obj_t* feels_val = create_label(col_right, "-23.9");
+    lv_obj_t* feels_val = create_label(col_right, "--.-");
     ui_set_font(feels_val, UI_FONT_H1);
     lv_obj_align(feels_val, LV_ALIGN_TOP_LEFT, 0, 132 + FEELS_Y_OFFSET);
 
