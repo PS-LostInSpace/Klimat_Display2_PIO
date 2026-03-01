@@ -1,5 +1,5 @@
 param(
-  [string]$DeviceUrl = "http://192.168.1.224",
+  [string]$DeviceUrl = "http://192.168.1.64",
   [string]$OtaUser = "admin",
   [string]$OtaPass = "AppKD2PIO,2026!",
   [string]$PioEnv = "reterminal_e1001",
