@@ -20,7 +20,7 @@ static void add_icon_column(lv_obj_t* parent, const lv_img_dsc_t* icon, const ch
 
   lv_obj_t* txt = lv_label_create(col);
   lv_label_set_text(txt, label);
-  lv_obj_set_style_text_color(txt, lv_color_black(), 0);
+  lv_obj_set_style_text_color(txt, lv_color_hex(0xAAAAAA), 0);
 }
 
 void ui_icon_test_build(lv_obj_t* parent) {
@@ -38,8 +38,23 @@ void ui_icon_test_build(lv_obj_t* parent) {
 
   lv_obj_t* title = lv_label_create(parent);
   lv_label_set_text(title, "UI ICON TEST 128/169/192");
-  lv_obj_set_style_text_color(title, lv_color_black(), 0);
+  lv_obj_set_style_text_color(title, lv_color_hex(0xAAAAAA), 0);
   lv_obj_set_style_pad_top(title, 10, 0);
+
+  lv_obj_t* swatch = lv_obj_create(parent);
+  lv_obj_set_size(swatch, 260, 38);
+  lv_obj_set_style_bg_color(swatch, lv_color_hex(0xAAAAAA), 0);
+  lv_obj_set_style_bg_opa(swatch, LV_OPA_COVER, 0);
+  lv_obj_set_style_border_color(swatch, lv_color_black(), 0);
+  lv_obj_set_style_border_width(swatch, 1, 0);
+  lv_obj_set_style_radius(swatch, 0, 0);
+  lv_obj_set_style_pad_all(swatch, 0, 0);
+  lv_obj_clear_flag(swatch, LV_OBJ_FLAG_SCROLLABLE);
+
+  lv_obj_t* swatch_txt = lv_label_create(swatch);
+  lv_label_set_text(swatch_txt, "LIGHT GRAY TEST #AAAAAA");
+  lv_obj_set_style_text_color(swatch_txt, lv_color_black(), 0);
+  lv_obj_center(swatch_txt);
 
   lv_obj_t* row = lv_obj_create(parent);
   lv_obj_set_size(row, LV_SIZE_CONTENT, LV_SIZE_CONTENT);

@@ -13,6 +13,10 @@
 #define KD2_USE_DUMMY_JSON 0
 #endif
 
+#ifndef KD2_EINK_4GRAY_DITHER
+#define KD2_EINK_4GRAY_DITHER 0
+#endif
+
 #if KD2_USE_DUMMY_JSON
 #include "kd2_dummy_data.h" // Optional: demo data for testing without MQTT
 #endif
@@ -80,10 +84,39 @@ static volatile EinkRefresh g_eink_refresh = EinkRefresh::None;
 // ----------------------------------------------------------------------------
 // Pixel format mapping: LVGL (8-bit) -> EPaper (black/white)
 // ----------------------------------------------------------------------------
-static inline uint16_t map_lv_color_to_epaper(lv_color_t c) {
+static inline uint16_t map_lv_color_to_epaper(lv_color_t c, int x, int y) {
   // LV_COLOR_DEPTH=8 => c.full is 0..255 (luma-ish)
   const uint8_t v = c.full;
+
+#if KD2_EINK_4GRAY_DITHER
+  // Ordered dithering to emulate 4 grayscale levels on B/W E-Ink.
+  // 0..63   -> black
+  // 64..127 -> dark gray (~2/3 black)
+  // 128..191-> light gray (~1/3 black)
+  // 192..255-> white
+  static const uint8_t bayer4[4][4] = {
+    { 0,  8,  2, 10},
+    {12,  4, 14,  6},
+    { 3, 11,  1,  9},
+    {15,  7, 13,  5},
+  };
+
+  uint8_t black_count = 0;
+  if (v < 64) {
+    black_count = 16;
+  } else if (v < 128) {
+    black_count = 11;
+  } else if (v < 192) {
+    black_count = 5;
+  } else {
+    black_count = 0;
+  }
+
+  const uint8_t threshold = bayer4[y & 0x3][x & 0x3];
+  return (threshold < black_count) ? TFT_BLACK : TFT_WHITE;
+#else
   return (v < 128) ? TFT_BLACK : TFT_WHITE;
+#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -93,7 +126,7 @@ static void my_flush_cb(lv_disp_drv_t* disp, const lv_area_t* area, lv_color_t* 
   // NOTE: drawPixel per pixel is slow but OK for current step.
   for (int y = area->y1; y <= area->y2; y++) {
     for (int x = area->x1; x <= area->x2; x++) {
-      epaper.drawPixel(x, y, map_lv_color_to_epaper(*color_p));
+      epaper.drawPixel(x, y, map_lv_color_to_epaper(*color_p, x, y));
       color_p++;
     }
   }
